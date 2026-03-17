@@ -4,7 +4,7 @@ A collection of Claude Code skills by [FrankLedo](https://github.com/FrankLedo).
 
 ## Installation
 
-```
+```text
 /plugin install https://github.com/FrankLedo/claude-skills
 ```
 
@@ -18,7 +18,7 @@ A collection of Claude Code skills by [FrankLedo](https://github.com/FrankLedo).
 
 Skills are invoked with the `fxl` prefix:
 
-```
+```text
 /fxl:skill-name
 ```
 
