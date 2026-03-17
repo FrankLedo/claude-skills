@@ -11,6 +11,11 @@
           "type": "json",
           "path": ".claude-plugin/plugin.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "skills/slack-monitor/.claude-plugin/plugin.json",
+          "jsonpath": "$.version"
         }
       ]
     }
