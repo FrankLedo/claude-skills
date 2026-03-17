@@ -1,4 +1,9 @@
 {
+  "name": "fxl",
+  "owner": {
+    "name": "Frank Ledo",
+    "url": "https://github.com/FrankLedo"
+  },
   "plugins": [
     {
       "name": "slack-monitor",
