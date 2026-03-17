@@ -4,11 +4,16 @@ A collection of Claude Code skills by [FrankLedo](https://github.com/FrankLedo).
 
 ## Installation
 
-Add the marketplace, then install the plugin:
+Add the marketplace once:
 
 ```text
 /plugin marketplace add FrankLedo/claude-skills
-/plugin install fxl
+```
+
+Then install individual skills by name:
+
+```text
+/plugin install slack-monitor
 ```
 
 ## Skills
