@@ -24,10 +24,10 @@ claude plugin install slack-monitor
 
 ## Usage
 
-Skills are invoked with the `fxl` prefix:
+Skills are invoked by name:
 
 ```text
-/fxl:skill-name
+/slack-monitor
 ```
 
 ## Contributing
