@@ -4,8 +4,11 @@ A collection of Claude Code skills by [FrankLedo](https://github.com/FrankLedo).
 
 ## Installation
 
+Add the marketplace, then install the plugin:
+
 ```text
-/plugin install https://github.com/FrankLedo/claude-skills
+/plugin marketplace add FrankLedo/claude-skills
+/plugin install fxl
 ```
 
 ## Skills

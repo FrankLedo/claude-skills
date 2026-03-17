@@ -1,0 +1,12 @@
+{
+  "plugins": [
+    {
+      "name": "fxl",
+      "description": "A collection of Claude Code skills by FrankLedo",
+      "source": {
+        "source": "github",
+        "repo": "FrankLedo/claude-skills"
+      }
+    }
+  ]
+}
