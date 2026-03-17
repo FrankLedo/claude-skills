@@ -4,23 +4,23 @@ A collection of Claude Code skills by [FrankLedo](https://github.com/FrankLedo).
 
 ## Installation
 
-Add the marketplace once:
+Add the marketplace once (case-sensitive):
 
 ```text
-/plugin marketplace add FrankLedo/claude-skills
+claude plugin marketplace add FrankLedo/claude-skills
 ```
 
 Then install individual skills by name:
 
 ```text
-/plugin install slack-monitor
+claude plugin install slack-monitor
 ```
 
 ## Skills
 
 | Skill | Description |
 |-------|-------------|
-| [slack-monitor](skills/slack-monitor/) | Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending. |
+| [slack-monitor](plugins/slack-monitor/) | Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending. |
 
 ## Usage
 
