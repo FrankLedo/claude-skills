@@ -11,7 +11,7 @@
       "source": {
         "source": "github",
         "repo": "FrankLedo/claude-skills",
-        "path": "skills/slack-monitor"
+        "path": "./plugins/slack-monitor"
       }
     }
   ]
