@@ -4,8 +4,16 @@ A collection of Claude Code skills by [FrankLedo](https://github.com/FrankLedo).
 
 ## Installation
 
+Add the marketplace once:
+
+```text
+/plugin marketplace add FrankLedo/claude-skills
 ```
-/plugin install https://github.com/FrankLedo/claude-skills
+
+Then install individual skills by name:
+
+```text
+/plugin install slack-monitor
 ```
 
 ## Skills
@@ -18,7 +26,7 @@ A collection of Claude Code skills by [FrankLedo](https://github.com/FrankLedo).
 
 Skills are invoked with the `fxl` prefix:
 
-```
+```text
 /fxl:skill-name
 ```
 
