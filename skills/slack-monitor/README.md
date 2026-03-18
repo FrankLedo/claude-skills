@@ -61,6 +61,7 @@ A template with defaults is at `templates/CLAUDE.md`.
 | `groups`               | `""`       | Comma-separated subteam IDs for group @mention monitoring            |
 | `autoReply`            | `true`     | Enable automatic replies for high-confidence drafts                  |
 | `autoReplyConfidence`  | `90`       | Minimum confidence score (0-100) to auto-send                        |
+| `draftMode`            | `false`    | When `true`, replies are created as Slack drafts instead of being posted directly. You edit and send the draft in Slack — nothing is posted on your behalf. High-confidence auto-replies also become drafts, with a CLI or DM notification. |
 | `reviewMode`           | `"slack"`  | `"slack"` (non-blocking DM review) or `"direct"` (inline CLI review) |
 | `interval`             | `15`       | Minutes between scans when idle                                      |
 | `activeInterval`       | `1`        | Minutes between scans when conversations are active                  |
@@ -87,6 +88,7 @@ channels: CXXXXXXXXXX,CXXXXXXXXXX
 groups: SXXXXXXXXXX
 autoReply: true
 autoReplyConfidence: 90
+draftMode: false
 reviewMode: slack
 interval: 15
 activeInterval: 1
@@ -181,7 +183,8 @@ you).
 
 - **Slack MCP** — `slack_search_public_and_private`,
   `slack_read_thread`, `slack_read_channel`,
-  `slack_send_message`, `slack_search_users`
+  `slack_send_message`, `slack_send_message_draft`,
+  `slack_search_users`
 - Additional MCP integrations are optional — configure
   context sources in your `~/.slack-monitor/CLAUDE.md`
   knowledge sections
@@ -212,7 +215,7 @@ workflow/
   DM-REVIEW.md      — loaded only in slack review mode
   FORMATS.md        — loaded only when reading/writing
                       state files
-SETUP.md            — loaded only on first run or
+  SETUP.md          — loaded only on first run or
                       /slack-monitor setup
 ```
 
