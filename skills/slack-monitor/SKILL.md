@@ -22,9 +22,9 @@ skill loads. Use that path directly as
 
 ```
 SKILL.md           — core workflow (this file)
-SETUP.md           — first-run setup wizard
 README.md          — user-facing documentation
 workflow/          — on-demand workflow details:
+  SETUP.md         — first-run setup wizard
   GUARDRAILS.md    — safety limits and rules
   HANDLE.md        — message handling + learning
   REVIEW.md        — review modes + formatting
@@ -79,7 +79,7 @@ does not exist, or when the user passes `setup` as an
 argument: `/slack-monitor setup`.
 
 When triggered, **Read**
-`$SKILL_SCRIPTS_DIR/SETUP.md` and follow the wizard.
+`$SKILL_SCRIPTS_DIR/workflow/SETUP.md` and follow the wizard.
 
 ## State Directory
 
