@@ -20,7 +20,7 @@ claude plugin install slack-monitor
 
 | Skill | Description |
 |-------|-------------|
-| [slack-monitor](plugins/slack-monitor/) | Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending. |
+| [slack-monitor](skills/slack-monitor/) | Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending. |
 
 ## Usage
 
