@@ -43,7 +43,7 @@ of the workflow files are read.
 
 ## Configuration
 
-All configuration lives in `~/.slack-monitor/CLAUDE.md`
+All configuration lives in `${CLAUDE_PLUGIN_DATA}/CLAUDE.md`
 (YAML frontmatter). **Read** the frontmatter only (not
 the body) at the start of each cycle.
 
@@ -75,16 +75,17 @@ maxQueue: 25
 
 ### Setup
 
-The setup wizard runs when `~/.slack-monitor/CLAUDE.md`
-does not exist, or when the user passes `setup` as an
-argument: `/slack-monitor setup`.
+The setup wizard (and migration check) runs when
+`${CLAUDE_PLUGIN_DATA}/CLAUDE.md` does not exist, or
+when the user passes `setup` as an argument:
+`/slack-monitor setup`.
 
 When triggered, **Read**
 `$SKILL_SCRIPTS_DIR/workflow/SETUP.md` and follow the wizard.
 
 ## State Directory
 
-All persistent state lives at `~/.slack-monitor/`.
+All persistent state lives at `${CLAUDE_PLUGIN_DATA}/`.
 This path is hardcoded (cross-platform: `$HOME` on
 macOS/Linux, `%USERPROFILE%` on Windows).
 
@@ -104,10 +105,10 @@ For file format details, **Read**
 
 **Read** these two files in parallel:
 
-1. `~/.slack-monitor/CLAUDE.md` — parse YAML
+1. `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` — parse YAML
    frontmatter only (not the body). If missing, run
    setup (see above).
-2. `~/.slack-monitor/last_scan` — ISO 8601 timestamp.
+2. `${CLAUDE_PLUGIN_DATA}/last_scan` — ISO 8601 timestamp.
    If missing, default to 15 minutes ago.
 
 Compute inline:
@@ -192,7 +193,7 @@ process each actionable message.
 
 ### 5. Update Timestamp
 
-**Write** `current_time` to `~/.slack-monitor/last_scan`.
+**Write** `current_time` to `${CLAUDE_PLUGIN_DATA}/last_scan`.
 Also write search cache if modified.
 
 ### 6. Schedule Next Scan

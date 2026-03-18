@@ -17,12 +17,12 @@ For each remaining message, in chronological order:
 
 2. **Load person context:** Resolve the sender's Slack
    user ID to a filename:
-   `~/.slack-monitor/people/<firstname_lastname>.md`.
+   `${CLAUDE_PLUGIN_DATA}/people/<firstname_lastname>.md`.
    If the file exists, **Read** it — use their title,
    team, timezone, communication style, and recent
    interactions to tailor the reply. If it doesn't
    exist, **Read** the template at
-   `~/.slack-monitor/people/_template.md` (if missing,
+   `${CLAUDE_PLUGIN_DATA}/people/_template.md` (if missing,
    **Read** from
    `$SKILL_SCRIPTS_DIR/templates/people/_template.md`).
    Look up the sender with `slack_search_users` to
@@ -48,7 +48,7 @@ For each remaining message, in chronological order:
 
 3. Gather context before drafting — run all applicable
    searches in parallel. **Read** the full
-   `~/.slack-monitor/CLAUDE.md` (if not already loaded
+   `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` (if not already loaded
    this cycle) and use the Projects, Common Questions,
    and other knowledge sections to determine what
    context sources to search (repos, MCP tools, docs,
@@ -115,7 +115,7 @@ For each remaining message, in chronological order:
    - Log in the summary as
      "auto-drafted (confidence: N%)" or
      "auto-sent (confidence: N%)" accordingly
-   - Append to `~/.slack-monitor/saved_messages.md`
+   - Append to `${CLAUDE_PLUGIN_DATA}/saved_messages.md`
      using the **Edit** tool
    - Skip the queue for this message
 
@@ -147,10 +147,10 @@ non-actionable (already replied, duplicates, etc.).
 For every **unique sender** observed in the raw search
 results (before filtering), check whether a person file
 exists at
-`~/.slack-monitor/people/<firstname_lastname>.md`:
+`${CLAUDE_PLUGIN_DATA}/people/<firstname_lastname>.md`:
 
 - **New person encountered** — **Read** the template
-  (from `~/.slack-monitor/people/_template.md`, or if
+  (from `${CLAUDE_PLUGIN_DATA}/people/_template.md`, or if
   missing from
   `$SKILL_SCRIPTS_DIR/templates/people/_template.md`),
   then populate with `slack_search_users` data. Fill
@@ -187,7 +187,7 @@ If 0 actionable messages, 0 self-DM commands, and 0 DM
 review replies were processed, skip this sub-step.
 
 Update the knowledge sections of
-`~/.slack-monitor/CLAUDE.md` when:
+`${CLAUDE_PLUGIN_DATA}/CLAUDE.md` when:
 
 - **New useful repo paths** — add to the
   "Useful Repo Paths" section

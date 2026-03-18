@@ -13,7 +13,7 @@ user has replied to any pending DM review threads.
 channel read (Step 1.7a) in a single parallel batch.
 Reuse the self-DM channel results in Step 1.7.
 
-1. **Read** `~/.slack-monitor/pending_review.json` and
+1. **Read** `${CLAUDE_PLUGIN_DATA}/pending_review.json` and
    parse the JSON array. If the file doesn't exist or
    is empty, skip to Step 2.
 
@@ -45,9 +45,9 @@ Reuse the self-DM channel results in Step 1.7.
      Remove the item from the pending queue: parse the
      current array, filter out by `id`, **Write** the
      updated array back to
-     `~/.slack-monitor/pending_review.json`.
+     `${CLAUDE_PLUGIN_DATA}/pending_review.json`.
 
-     Append to `~/.slack-monitor/saved_messages.md`
+     Append to `${CLAUDE_PLUGIN_DATA}/saved_messages.md`
      using the **Edit** tool with the sent reply text
      and "Notes: sent via DM review".
 

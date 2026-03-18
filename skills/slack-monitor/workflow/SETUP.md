@@ -1,8 +1,32 @@
 # Slack Monitor — First Run Setup
 
 This file is read by the skill when no `CLAUDE.md` is
-found at `~/.slack-monitor/CLAUDE.md`. It walks the
+found at `${CLAUDE_PLUGIN_DATA}/CLAUDE.md`. It walks the
 user through initial configuration.
+
+## Migration from Legacy Path
+
+Before running the setup wizard, check whether data
+exists at the old location (`~/.slack-monitor/`).
+
+If `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` does **not** exist
+but `~/.slack-monitor/CLAUDE.md` **does** exist, migrate
+automatically:
+
+```bash
+cp -r ~/.slack-monitor/. ${CLAUDE_PLUGIN_DATA}/
+```
+
+Then inform the user:
+
+> "Migrated your slack-monitor data to the new plugin
+> data directory (`${CLAUDE_PLUGIN_DATA}/`). Your
+> original data at `~/.slack-monitor/` has been left
+> in place — you can delete it once you're satisfied
+> everything is working."
+
+After migration, continue with the normal scan cycle
+(skip the Setup Wizard — config is already present).
 
 ## Setup Wizard
 
@@ -12,10 +36,10 @@ Copy the entire templates directory to create the
 state directory with all default files:
 
 ```bash
-cp -r $SKILL_SCRIPTS_DIR/templates ~/.slack-monitor
+cp -r $SKILL_SCRIPTS_DIR/templates ${CLAUDE_PLUGIN_DATA}
 ```
 
-This creates `~/.slack-monitor/` with `CLAUDE.md`
+This creates `${CLAUDE_PLUGIN_DATA}/` with `CLAUDE.md`
 and `people/_template.md` in one command.
 
 ### Step 2 — Walk through configuration
@@ -66,7 +90,7 @@ Options:
 ### Step 3 — Write config
 
 **Write** the populated JSON to
-`~/.slack-monitor/CLAUDE.md`.
+`${CLAUDE_PLUGIN_DATA}/CLAUDE.md`.
 
 ### Step 4 — Confirm and proceed
 
