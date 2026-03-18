@@ -6,6 +6,7 @@ channels:
 groups:
 autoReply: true
 autoReplyConfidence: 90
+draftMode: false
 reviewMode: slack
 interval: 15
 activeInterval: 1
@@ -45,6 +46,11 @@ skill.
   actionable.
 - **groups** — Comma-separated subteam IDs for group
   @mention monitoring.
+- **draftMode** — When `true`, all replies sent on
+  behalf of the user are created as Slack drafts instead
+  of being posted directly. The user can edit and send
+  each draft in Slack. Avoids any "Sent with Claude"
+  attribution. Default: `false`.
 - **reviewMode** — `slack` (non-blocking DM review) or
   `direct` (inline CLI review). Default: `slack`.
 

@@ -50,6 +50,20 @@ draft replies. Default: `slack`.
 | `slack`  | Slack DMs        | No        |
 | `direct` | Claude Code CLI  | Yes       |
 
+`draftMode` controls how approved replies are sent.
+When `true`, replies go to Slack as drafts the user
+edits and sends manually — no direct posting, no
+attribution. Applies in both review modes.
+
+| `draftMode` | Send method               |
+|-------------|---------------------------|
+| `false`     | `slack_send_message`      |
+| `true`      | `slack_send_message_draft`|
+
+> Notification DMs **to the user** (monitor alerts,
+> review prompts) always use `slack_send_message`
+> regardless of `draftMode`.
+
 ### `slack` mode (non-blocking)
 
 a. Build a pending review queue item (leave `dm_ts`
@@ -113,11 +127,16 @@ b. Use `AskUserQuestion` with options:
    - `skip — Do not reply`
 
 c. Based on the user's choice:
-   - **1/2/3:** Send the chosen draft via
-     `slack_send_message` with `thread_ts` per the
-     Threading Rule. Log as "sent (direct review)".
+
+   - **1/2/3:** If `draftMode` is `false`, send via
+     `slack_send_message`. If `draftMode` is `true`,
+     create via `slack_send_message_draft`. Use
+     `thread_ts` per the Threading Rule. Log as
+     "sent (direct review)" or
+     "drafted (direct review)".
    - **skip:** Log as "skipped (direct review)".
-   - **Custom text:** Send that text as the reply.
+   - **Custom text:** Send or draft that text as the
+     reply per `draftMode`.
 
 d. This **blocks the scan cycle** — acceptable in
    direct mode because the user is at the terminal.

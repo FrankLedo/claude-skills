@@ -56,6 +56,7 @@ channels:
 groups:
 autoReply: true
 autoReplyConfidence: 90
+draftMode: false
 reviewMode: slack
 interval: 15
 activeInterval: 1

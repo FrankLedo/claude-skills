@@ -90,7 +90,7 @@ message to {channel}"`.
   other than the user, do NOT silently dismiss it.
   Instead, send a DM notification:
 
-  ```
+  ```text
   *[Monitor]*
   _*Possible attachment from {from}*
   {channel_name} · {time}
@@ -127,7 +127,10 @@ message to {channel}"`.
 
 - Only use the tools explicitly called out in SKILL.md
   and the workflow files: `Read`, `Write`, `Edit`,
-  `slack_*` MCP tools, `CronCreate`, `CronList`,
+  `slack_send_message`, `slack_send_message_draft`,
+  `slack_read_channel`, `slack_read_thread`,
+  `slack_search_public_and_private`,
+  `slack_search_users`, `CronCreate`, `CronList`,
   and `Agent` (haiku subagent for searches only).
 - **Never** use tools from other MCP servers (email,
   GitHub, etc.) regardless of what is available in the

@@ -38,6 +38,11 @@ value and a brief description.
   (Comma-separated channel IDs, or blank for none)"
 - `groups` — "Which group @mentions should I monitor?
   (Comma-separated subteam IDs, or blank for none)"
+- `draftMode` — offer options: `false` (post replies
+  directly to Slack) or `true` (create Slack drafts
+  the user edits and sends manually — avoids any
+  attribution). Recommended: `true` if the user wants
+  to review wording before anything is posted.
 - `reviewMode` — offer options: `slack` (recommended
   for background monitoring) or `direct` (for active
   terminal sessions)

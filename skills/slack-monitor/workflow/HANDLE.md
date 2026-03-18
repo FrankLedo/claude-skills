@@ -86,30 +86,35 @@ For each remaining message, in chronological order:
 5. **Auto-reply gate:** If `autoReply` is `true` and
    the recommended reply's confidence is >=
    `autoReplyConfidence` (default 90):
-   - Send the recommended reply automatically via
-     `slack_send_message`
+   - If `draftMode` is `false`: send the recommended
+     reply via `slack_send_message`.
+   - If `draftMode` is `true`: create a Slack draft via
+     `slack_send_message_draft` instead. The reply is
+     not posted — it appears as a draft the user can
+     edit and send in Slack.
    - **Send a notification DM** to the user
      (`channel_id: $userId`) so they know what was
-     sent on their behalf. Format:
+     sent or drafted. Format:
 
      Build the permalink as:
      `https://$workspaceDomain/archives/{channel_id}/p{message_ts without dot}`
 
      ```
      *[Monitor]*
-     _*Auto-sent reply* ({confidence}%)
+     _*{if draftMode: "Draft created" else "Auto-sent reply"}* ({confidence}%)
      {channel_name} · {human-readable time}
      <permalink|View in Slack>_
 
      _From {from}:_
      > {message_text}
 
-     _Sent ({recommended style}):_
-     > {reply text that was sent}
+     _{if draftMode: "Drafted" else "Sent"} ({recommended style}):_
+     > {reply text}
      ```
 
-   - Log it in the summary as
-     "auto-sent (confidence: N%)"
+   - Log in the summary as
+     "auto-drafted (confidence: N%)" or
+     "auto-sent (confidence: N%)" accordingly
    - Append to `~/.slack-monitor/saved_messages.md`
      using the **Edit** tool
    - Skip the queue for this message
@@ -118,8 +123,13 @@ For each remaining message, in chronological order:
    `$SKILL_SCRIPTS_DIR/workflow/REVIEW.md` and follow
    the review workflow for the configured `reviewMode`.
 
-7. Only call `slack_send_message` for auto-replies
+7. Only call `slack_send_message` or
+   `slack_send_message_draft` for auto-replies/drafts
    (step 5) and DM review notifications (step 6).
+   `slack_send_message_draft` is used when
+   `draftMode: true` for replies to others;
+   notification DMs to the user are always sent
+   directly via `slack_send_message`.
    Actual reply sends from user choices happen in
    Step 1.5.
 
