@@ -86,8 +86,8 @@ When triggered, **Read**
 ## State Directory
 
 All persistent state lives at `${CLAUDE_PLUGIN_DATA}/`.
-This path is hardcoded (cross-platform: `$HOME` on
-macOS/Linux, `%USERPROFILE%` on Windows).
+This path is provided by the Claude plugin framework
+(cross-platform).
 
 - `CLAUDE.md` — config (frontmatter) + knowledge (body)
 - `last_scan` — ISO 8601 UTC timestamp

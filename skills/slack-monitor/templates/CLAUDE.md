@@ -82,7 +82,7 @@ skill.
 ## People
 
 Per-person context is maintained in individual files
-under `~/.slack-monitor/people/`. See SKILL.md Step 4
+under `${CLAUDE_PLUGIN_DATA}/people/`. See SKILL.md Step 4
 and Step 7 for details.
 
 **Verifying DM history:** To check if the user has

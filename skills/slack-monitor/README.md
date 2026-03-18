@@ -17,7 +17,7 @@ first time, the skill detects that no config exists and
 runs the **setup wizard** (defined in
 [SETUP.md](SETUP.md)). The wizard will:
 
-1. Create `~/.slack-monitor/` with all necessary files
+1. Create `${CLAUDE_PLUGIN_DATA}/` with all necessary files
    (copied from `templates/`)
 2. Walk you through configuration — required fields
    first (Slack user ID, workspace domain), then
@@ -28,19 +28,19 @@ runs the **setup wizard** (defined in
 Alternatively, set up manually:
 
 ```bash
-mkdir -p ~/.slack-monitor/people
-cp templates/* ~/.slack-monitor/
-cp -r templates/people/* ~/.slack-monitor/people/
+mkdir -p "${CLAUDE_PLUGIN_DATA}/people"
+cp templates/* "${CLAUDE_PLUGIN_DATA}/"
+cp -r templates/people/* "${CLAUDE_PLUGIN_DATA}/people/"
 ```
 
-Then edit `~/.slack-monitor/CLAUDE.md` with your
+Then edit `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` with your
 values (see [Configuration](#configuration) below) and
 run `/slack-monitor`.
 
 ## Configuration
 
 All configuration and knowledge lives in
-`~/.slack-monitor/CLAUDE.md`. Configuration is in the
+`${CLAUDE_PLUGIN_DATA}/CLAUDE.md`. Configuration is in the
 YAML frontmatter; accumulated knowledge (projects,
 common questions, people index) is in the markdown body.
 A template with defaults is at `templates/CLAUDE.md`.
@@ -137,7 +137,7 @@ control.
 
 ## State Files
 
-All state lives in `~/.slack-monitor/`:
+All state lives in `${CLAUDE_PLUGIN_DATA}/`:
 
 | File                   | Purpose                                      |
 |------------------------|----------------------------------------------|
@@ -155,7 +155,7 @@ run. The `CLAUDE.md` template and
 
 ### Customizing People Profiles
 
-Edit `~/.slack-monitor/people/_template.md` to add
+Edit `${CLAUDE_PLUGIN_DATA}/people/_template.md` to add
 fields specific to your organization. The default
 template includes `name`, `slack_id`, `title`, and
 `timezone`. You might add fields like:
@@ -186,7 +186,7 @@ you).
   `slack_send_message`, `slack_send_message_draft`,
   `slack_search_users`
 - Additional MCP integrations are optional — configure
-  context sources in your `~/.slack-monitor/CLAUDE.md`
+  context sources in your `${CLAUDE_PLUGIN_DATA}/CLAUDE.md`
   knowledge sections
 
 ## Architecture
