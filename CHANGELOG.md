@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5](https://github.com/FrankLedo/claude-skills/compare/v0.1.4...v0.1.5) (2026-03-18)
+
+
+### Bug Fixes
+
+* correct skills table link to skills/slack-monitor ([4605a41](https://github.com/FrankLedo/claude-skills/commit/4605a4118f3eb6b1a36f3ea2683fec073f9c2774))
+
 ## [0.1.4](https://github.com/FrankLedo/claude-skills/compare/v0.1.3...v0.1.4) (2026-03-17)
 
 
