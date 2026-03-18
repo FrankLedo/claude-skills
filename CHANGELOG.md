@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6](https://github.com/FrankLedo/claude-skills/compare/v0.1.5...v0.1.6) (2026-03-18)
+
+
+### Features
+
+* **slack-monitor:** add draftMode flag for Slack draft replies ([c9537d9](https://github.com/FrankLedo/claude-skills/commit/c9537d9c841930fa668a5eee3e7ac7ec187e37d5))
+
+
+### Bug Fixes
+
+* **slack-monitor:** move SETUP.md to workflow/, add security guardrails ([25a79dc](https://github.com/FrankLedo/claude-skills/commit/25a79dc669fb65a3863d4e540028aef50787d8db))
+
 ## [0.1.5](https://github.com/FrankLedo/claude-skills/compare/v0.1.4...v0.1.5) (2026-03-18)
 
 
