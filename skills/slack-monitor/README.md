@@ -25,18 +25,6 @@ runs the **setup wizard** (defined in
    schedule, etc.) with a "use defaults" shortcut
 3. Start scanning immediately
 
-Alternatively, set up manually:
-
-```bash
-mkdir -p "${CLAUDE_PLUGIN_DATA}/people"
-cp templates/* "${CLAUDE_PLUGIN_DATA}/"
-cp -r templates/people/* "${CLAUDE_PLUGIN_DATA}/people/"
-```
-
-Then edit `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` with your
-values (see [Configuration](#configuration) below) and
-run `/slack-monitor`.
-
 ## Configuration
 
 All configuration and knowledge lives in
