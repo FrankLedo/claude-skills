@@ -81,9 +81,7 @@ skill.
 
 ## People
 
-Per-person context is maintained in individual files
-under `${CLAUDE_PLUGIN_DATA}/people/`. See SKILL.md Step 4
-and Step 7 for details.
+The skill maintains per-person context files automatically.
 
 **Verifying DM history:** To check if the user has
 DM history with someone, use `slack_read_channel` with

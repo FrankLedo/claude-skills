@@ -17,8 +17,7 @@ first time, the skill detects that no config exists and
 runs the **setup wizard** (defined in
 [SETUP.md](SETUP.md)). The wizard will:
 
-1. Create `${CLAUDE_PLUGIN_DATA}/` with all necessary files
-   (copied from `templates/`)
+1. Initialize the skill data directory with all necessary files
 2. Walk you through configuration — required fields
    first (Slack user ID, workspace domain), then
    optional fields (channels, groups, review mode,
