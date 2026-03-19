@@ -1,0 +1,10 @@
+{
+  "notify": "direct",
+  "slackUserId": "",
+  "workHours": { "start": 8, "end": 18, "days": "1-5" },
+  "interval": 60,
+  "githubToken": "",
+  "jiraBaseUrl": "",
+  "jiraEmail": "",
+  "jiraToken": ""
+}
