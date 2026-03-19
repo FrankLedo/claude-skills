@@ -50,6 +50,6 @@ Configure in setup: `direct` (terminal) or `slack` (DM to self).
 ## Requirements
 
 - Node.js (for fetch scripts)
-- GitHub personal access token (recommended; required for private repos)
-- Jira API token (if watching Jira tickets)
-- Slack MCP (if using Slack notifications)
+- **GitHub:** [GitHub MCP server](https://github.com/github/github-mcp-server) (preferred), or set `GITHUB_TOKEN` env var for the fetch script
+- **Jira:** [Jira MCP server](https://github.com/sooperset/mcp-atlassian) (preferred), or set `JIRA_BASE_URL`, `JIRA_EMAIL`, and `JIRA_TOKEN` env vars
+- **Slack notifications:** Slack MCP server
