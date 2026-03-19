@@ -81,13 +81,6 @@ skill.
 
 ## People
 
-The skill maintains per-person context files automatically.
-
-**Verifying DM history:** To check if the user has
-DM history with someone, use `slack_read_channel` with
-their Slack user ID (not their name). Name-based
-search is unreliable.
-
 <!-- Add any additional enrichment sources for person
      files here. Example:
 
