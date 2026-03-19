@@ -1,6 +1,6 @@
 {
   "name": "tickler",
-  "version": "0.1.0",
+  "version": "0.1.7",
   "description": "Watch GitHub PRs, issues, and Jira tickets for state changes. Notifies when a watched item meets its condition.",
   "author": {
     "name": "Frank Ledo",
@@ -8,5 +8,11 @@
   },
   "repository": "https://github.com/FrankLedo/claude-skills",
   "license": "MIT",
-  "keywords": ["github", "jira", "productivity", "workflow", "monitoring"]
+  "keywords": [
+    "github",
+    "jira",
+    "productivity",
+    "workflow",
+    "monitoring"
+  ]
 }
