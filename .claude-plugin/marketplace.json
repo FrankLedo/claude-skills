@@ -13,6 +13,15 @@
         "repo": "FrankLedo/claude-skills",
         "path": "./skills/slack-monitor"
       }
+    },
+    {
+      "name": "tickler",
+      "description": "Watch GitHub PRs, issues, and Jira tickets for state changes. Notifies when a watched item meets its condition.",
+      "source": {
+        "source": "github",
+        "repo": "FrankLedo/claude-skills",
+        "path": "./skills/tickler"
+      }
     }
   ]
 }
