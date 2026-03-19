@@ -71,6 +71,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `tickler` skill: watch GitHub PRs, issues, and Jira tickets for
+  state changes; self-scheduling background monitor with direct or
+  Slack notifications
+
 ## [0.1.0] - 2026-03-13
 
 ### Added
