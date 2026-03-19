@@ -115,8 +115,8 @@ Compute inline:
 
 - `current_time` — current UTC ISO 8601
 - `last_scan_epoch` — last_scan as Unix epoch seconds
-- `after_date` — calendar date **one day before**
-  last_scan (for Slack `after:` query modifier)
+- `after_date` — calendar date of last_scan
+  (for Slack `after:` query modifier)
 - `local_hour` — current hour (0–23) in user's
   timezone
 - `local_dow` — current day-of-week (1=Mon, 7=Sun)
