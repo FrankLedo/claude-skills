@@ -1,6 +1,9 @@
 # macOS
 .DS_Store
 
+# Planning docs (not published)
+planning/
+
 # Logs
 logs
 *.log
