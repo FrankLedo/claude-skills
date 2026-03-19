@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12](https://github.com/FrankLedo/claude-skills/compare/v0.1.11...v0.1.12) (2026-03-19)
+
+
+### Bug Fixes
+
+* simplify marketplace to single fxl plugin entry ([3786689](https://github.com/FrankLedo/claude-skills/commit/3786689968f759f1792702d800ae4dd45b6d2fca))
+
 ## [0.1.11](https://github.com/FrankLedo/claude-skills/compare/v0.1.10...v0.1.11) (2026-03-19)
 
 
