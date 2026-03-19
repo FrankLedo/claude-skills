@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10](https://github.com/FrankLedo/claude-skills/compare/v0.1.9...v0.1.10) (2026-03-19)
+
+
+### Bug Fixes
+
+* remove duplicate tickler entry with old source format ([ef556cc](https://github.com/FrankLedo/claude-skills/commit/ef556cc6034822053c3516148158422bfc4e8268))
+* use git-subdir source type for plugin marketplace entries ([a5c2d2f](https://github.com/FrankLedo/claude-skills/commit/a5c2d2fdf1fef6f420085c7419ac5c4a7f3b515d))
+
 ## [0.1.9](https://github.com/FrankLedo/claude-skills/compare/v0.1.8...v0.1.9) (2026-03-19)
 
 
