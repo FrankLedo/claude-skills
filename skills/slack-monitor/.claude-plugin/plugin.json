@@ -1,6 +1,6 @@
 {
   "name": "slack-monitor",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending.",
   "author": {
     "name": "Frank Ledo",

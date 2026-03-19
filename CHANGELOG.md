@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9](https://github.com/FrankLedo/claude-skills/compare/v0.1.8...v0.1.9) (2026-03-19)
+
+
+### Bug Fixes
+
+* **tickler:** add install instructions and strengthen identity guard ([#20](https://github.com/FrankLedo/claude-skills/issues/20)) ([2fde2e1](https://github.com/FrankLedo/claude-skills/commit/2fde2e140ef89003985a65f92a8ae1bee25f93f4))
+
 ## [0.1.8](https://github.com/FrankLedo/claude-skills/compare/v0.1.7...v0.1.8) (2026-03-19)
 
 
