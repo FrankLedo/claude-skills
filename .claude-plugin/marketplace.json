@@ -6,12 +6,14 @@
   },
   "plugins": [
     {
-      "name": "fxl",
-      "description": "Claude Code skills by Frank Ledo — includes slack-monitor and tickler.",
-      "source": {
-        "source": "github",
-        "repo": "FrankLedo/claude-skills"
-      }
+      "name": "slack-monitor",
+      "source": "./skills/slack-monitor",
+      "description": "Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending."
+    },
+    {
+      "name": "tickler",
+      "source": "./skills/tickler",
+      "description": "Watch GitHub PRs, issues, and Jira tickets for state changes. Notifies when a watched item meets its condition."
     }
   ]
 }
