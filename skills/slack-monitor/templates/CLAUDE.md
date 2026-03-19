@@ -81,15 +81,6 @@ skill.
 
 ## People
 
-Per-person context is maintained in individual files
-under `~/.slack-monitor/people/`. See SKILL.md Step 4
-and Step 7 for details.
-
-**Verifying DM history:** To check if the user has
-DM history with someone, use `slack_read_channel` with
-their Slack user ID (not their name). Name-based
-search is unreliable.
-
 <!-- Add any additional enrichment sources for person
      files here. Example:
 
