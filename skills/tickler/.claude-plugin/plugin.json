@@ -1,6 +1,6 @@
 {
   "name": "tickler",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Watch GitHub PRs, issues, and Jira tickets for state changes. Notifies when a watched item meets its condition.",
   "author": {
     "name": "Frank Ledo",
