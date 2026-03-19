@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7](https://github.com/FrankLedo/claude-skills/compare/v0.1.6...v0.1.7) (2026-03-19)
+
+
+### Features
+
+* **tickler:** add tickler skill ([#17](https://github.com/FrankLedo/claude-skills/issues/17)) ([d2d9f1f](https://github.com/FrankLedo/claude-skills/commit/d2d9f1f56eadbd448422472faf28c3e29165d01f))
+
+
+### Bug Fixes
+
+* **slack-monitor:** complete ${CLAUDE_PLUGIN_DATA} migration — README, templates, SKILL.md ([c82435d](https://github.com/FrankLedo/claude-skills/commit/c82435d1ad9ec7de122c8e319e399c3ccc46c8c5))
+* **slack-monitor:** migrate state dir to ${CLAUDE_PLUGIN_DATA} ([1f03c51](https://github.com/FrankLedo/claude-skills/commit/1f03c5150ea7982cdbb3acff99eeca912ae2ee25))
+* **slack-monitor:** migrate state dir to ${CLAUDE_PLUGIN_DATA} ([9ab57ab](https://github.com/FrankLedo/claude-skills/commit/9ab57abcad8cdd6821b7118324064790ee8a1865))
+* **slack-monitor:** update remaining ~/.slack-monitor refs missed in initial migration ([f15c01f](https://github.com/FrankLedo/claude-skills/commit/f15c01f93ecd16e4931bff020b20152eec8b7a98))
+
 ## [0.1.6](https://github.com/FrankLedo/claude-skills/compare/v0.1.5...v0.1.6) (2026-03-18)
 
 
