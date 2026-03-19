@@ -1,7 +1,7 @@
 # State File Formats
 
 Reference for the JSON/markdown formats used by state
-files in `~/.slack-monitor/`.
+files in `${CLAUDE_PLUGIN_DATA}/`.
 
 ## Saved Messages (`saved_messages.md`)
 
