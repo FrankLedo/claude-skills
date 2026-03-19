@@ -1,6 +1,6 @@
 # Tickler — Setup Wizard
 
-Read when `${CLAUDE_PLUGIN_DATA}/config.json` is missing or when
+Read when `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` is missing or when
 the user runs `/tickler setup`.
 
 ### Step 1 — Notification method
@@ -25,7 +25,7 @@ Default: 60.
 
 Ask: "Do you have a GitHub personal access token? (Recommended if
 you watch private repos or want higher rate limits)"
-- If yes: "Paste your token (it will be stored in config.json)"
+- If yes: "Paste your token (it will be stored in CLAUDE.md)"
 - If no: skip (public repos work without a token)
 
 ### Step 4 — Jira (optional)
@@ -39,8 +39,9 @@ Ask: "Do you want to watch Jira tickets?"
 
 ### Step 5 — Write config
 
-**Write** the populated config to
-`${CLAUDE_PLUGIN_DATA}/config.json`.
+**Write** the populated config as YAML frontmatter to
+`${CLAUDE_PLUGIN_DATA}/CLAUDE.md`, using the template at
+`$SKILL_SCRIPTS_DIR/templates/CLAUDE.md` as the base.
 
 Create empty watch list if not present:
 **Write** `[]` to `${CLAUDE_PLUGIN_DATA}/tickler.json` (only if

@@ -41,20 +41,8 @@ scripts/
 
 ## Configuration
 
-Config lives at `${CLAUDE_PLUGIN_DATA}/config.json`.
-
-```json
-{
-  "notify": "direct",
-  "slackUserId": "",
-  "workHours": { "start": 8, "end": 18, "days": "1-5" },
-  "interval": 60,
-  "githubToken": "",
-  "jiraBaseUrl": "",
-  "jiraEmail": "",
-  "jiraToken": ""
-}
-```
+Config lives in the YAML frontmatter of `${CLAUDE_PLUGIN_DATA}/CLAUDE.md`,
+which is auto-loaded as context. Key fields:
 
 - `notify`: `"direct"` (print to terminal) or `"slack"` (DM to self)
 - `slackUserId`: required if `notify` is `"slack"` — your Slack user ID
@@ -62,7 +50,10 @@ Config lives at `${CLAUDE_PLUGIN_DATA}/config.json`.
 - `jiraBaseUrl`: e.g. `https://myorg.atlassian.net`
 - `jiraEmail` + `jiraToken`: Jira API credentials
 
-**Setup** runs when `${CLAUDE_PLUGIN_DATA}/config.json` does not
+Custom item types can be defined in the markdown body of
+`${CLAUDE_PLUGIN_DATA}/CLAUDE.md` under a `## Custom Types` section.
+
+**Setup** runs when `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` does not
 exist, or when the user passes `setup`: `/tickler setup`.
 When triggered, **Read** `$SKILL_SCRIPTS_DIR/workflow/SETUP.md`.
 
@@ -84,7 +75,7 @@ Parse `$ARGUMENTS` before doing anything else:
 ### Step 1 — Initialize
 
 In parallel:
-1. **Read** `${CLAUDE_PLUGIN_DATA}/config.json`. If missing, run setup.
+1. **Read** `${CLAUDE_PLUGIN_DATA}/CLAUDE.md`. If missing, run setup.
 2. **Read** `${CLAUDE_PLUGIN_DATA}/tickler.json`. If missing or empty
    array, skip to Step 4 (still schedule next run).
 3. **Read** `${CLAUDE_PLUGIN_DATA}/state.json`. If missing, treat as

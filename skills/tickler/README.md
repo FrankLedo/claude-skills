@@ -59,13 +59,14 @@ export CLAUDE_PLUGIN_DATA="$HOME/.tickler-dev"
 mkdir -p "$CLAUDE_PLUGIN_DATA"
 
 # Copy starter state files
-cp "$SKILL_SCRIPTS_DIR/templates/config.json" "$CLAUDE_PLUGIN_DATA/config.json"
+cp "$SKILL_SCRIPTS_DIR/templates/CLAUDE.md"    "$CLAUDE_PLUGIN_DATA/CLAUDE.md"
 cp "$SKILL_SCRIPTS_DIR/templates/tickler.json" "$CLAUDE_PLUGIN_DATA/tickler.json"
 cp "$SKILL_SCRIPTS_DIR/templates/state.json"   "$CLAUDE_PLUGIN_DATA/state.json"
 ```
 
-Then edit `~/.tickler-dev/config.json` with your credentials and invoke the
-skill by asking Claude to read `$SKILL_SCRIPTS_DIR/SKILL.md` and run it.
+Then edit `~/.tickler-dev/CLAUDE.md` (YAML frontmatter) with your credentials
+and invoke the skill by asking Claude to read `$SKILL_SCRIPTS_DIR/SKILL.md`
+and run it.
 
 ## Requirements
 
