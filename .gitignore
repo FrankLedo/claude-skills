@@ -4,6 +4,9 @@
 # Planning docs (not published)
 planning/
 
+# Claude Code session files
+.claude/scheduled_tasks.lock
+
 # Logs
 logs
 *.log
