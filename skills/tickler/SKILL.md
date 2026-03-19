@@ -7,7 +7,7 @@ description: >
   a specific item. Also runs as a background monitor that checks all
   watched items on a schedule.
 user-invocable: true
-argument-hint: "[add <url> [condition] | remove <url> | list | setup | stop | (no args to check now)]"
+argument-hint: "[add <url> [condition] | remove <url> | list | config | setup | stop | (no args to check now)]"
 ---
 
 # Tickler
@@ -67,6 +67,7 @@ Parse `$ARGUMENTS` before doing anything else:
 | `add <url> [condition]` | Read `workflow/ADD.md` → add item |
 | `remove <url>` | Read `workflow/ADD.md` → remove item |
 | `list` | Read `workflow/ADD.md` → list items |
+| `config` | Resolve `${CLAUDE_PLUGIN_DATA}` and print the full path to `CLAUDE.md`, then show current config values |
 | `stop` | Cancel scheduled cron, confirm to user |
 | *(none)* | Run a check cycle (Steps 1–5 below) |
 

@@ -31,9 +31,13 @@ something changes or meets a condition you care about.
 ```text
 /tickler list
 /tickler remove https://github.com/org/repo/pull/123
+/tickler config
 /tickler stop
 /tickler setup
 ```
+
+`/tickler config` resolves and prints the full path to your `CLAUDE.md`
+config file and shows current settings.
 
 ## Conditions
 
