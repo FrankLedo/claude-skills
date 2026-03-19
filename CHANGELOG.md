@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.14](https://github.com/FrankLedo/claude-skills/compare/v0.1.13...v0.1.14) (2026-03-19)
+
+
+### Features
+
+* add release automation and slack-monitor skill ([90f4d8c](https://github.com/FrankLedo/claude-skills/commit/90f4d8cad3fefb0be438113e81592ab013342a2b))
+* add release automation and slack-monitor skill ([214d00e](https://github.com/FrankLedo/claude-skills/commit/214d00e991e3c32c213cb4147ca49b4411397bad))
+* **slack-monitor:** add draftMode flag for Slack draft replies ([c9537d9](https://github.com/FrankLedo/claude-skills/commit/c9537d9c841930fa668a5eee3e7ac7ec187e37d5))
+* **tickler:** add tickler skill ([#17](https://github.com/FrankLedo/claude-skills/issues/17)) ([d2d9f1f](https://github.com/FrankLedo/claude-skills/commit/d2d9f1f56eadbd448422472faf28c3e29165d01f))
+
+
+### Bug Fixes
+
+* add markdownlint config and fix code fence language tags ([f4b3863](https://github.com/FrankLedo/claude-skills/commit/f4b38636c97f789e194f7d682e243d2ac37e3a25))
+* add markdownlint config and fix code fence language tags ([6e15e44](https://github.com/FrankLedo/claude-skills/commit/6e15e44da1d251269b748f705c63c519d38faf7d))
+* add marketplace.json and correct install instructions ([c7f1b15](https://github.com/FrankLedo/claude-skills/commit/c7f1b15cfdec7179ded5ba1abf409fd0c648bc5b))
+* add plugin.json to slack-monitor for per-skill marketplace install ([f00cf84](https://github.com/FrankLedo/claude-skills/commit/f00cf848154ad77f5006f5a9c94ee9f374283395))
+* add required name and owner fields to marketplace.json ([a0132fc](https://github.com/FrankLedo/claude-skills/commit/a0132fc8a0d0615de760deb56623bea0d7a78dc9))
+* add required name and owner fields to marketplace.json ([36e138a](https://github.com/FrankLedo/claude-skills/commit/36e138a0660101f72c47aaee7f77c95ea00f1139))
+* add skill plugin.json files to release-please version tracking ([40c6199](https://github.com/FrankLedo/claude-skills/commit/40c61992413625c689b0b9d9a67ea50a78fa4305))
+* add slack-monitor plugin.json to release-please extra-files ([01ba580](https://github.com/FrankLedo/claude-skills/commit/01ba5806e655868b85a76365c6267148b1305539))
+* correct skill invocation — /slack-monitor not /fxl:slack-monitor ([865be0d](https://github.com/FrankLedo/claude-skills/commit/865be0d1f2979ac8799b4187bf233555ea8298d0))
+* correct skills table link to skills/slack-monitor ([4605a41](https://github.com/FrankLedo/claude-skills/commit/4605a4118f3eb6b1a36f3ea2683fec073f9c2774))
+* list skills as individual installable plugins in marketplace ([3c0c3ef](https://github.com/FrankLedo/claude-skills/commit/3c0c3efa6afe843d4b6ce6c7c4220ce947edc8d6))
+* remove duplicate tickler entry with old source format ([ef556cc](https://github.com/FrankLedo/claude-skills/commit/ef556cc6034822053c3516148158422bfc4e8268))
+* remove trailing comma from marketplace.json ([b35633b](https://github.com/FrankLedo/claude-skills/commit/b35633bb09429d89ec59091401bdcb6875bdcbff))
+* rename skills/ to plugins/ to match canonical Anthropic layout ([9732b77](https://github.com/FrankLedo/claude-skills/commit/9732b775e63ca8d6fa042c75c2319f5637b2d8c5))
+* rename skills/ to plugins/ to match canonical Anthropic layout ([4e9aafa](https://github.com/FrankLedo/claude-skills/commit/4e9aafad346d95026c65d6cb0a225ff0f7267253))
+* simplify marketplace to single fxl plugin entry ([3786689](https://github.com/FrankLedo/claude-skills/commit/3786689968f759f1792702d800ae4dd45b6d2fca))
+* **slack-monitor:** complete ${CLAUDE_PLUGIN_DATA} migration — README, templates, SKILL.md ([c82435d](https://github.com/FrankLedo/claude-skills/commit/c82435d1ad9ec7de122c8e319e399c3ccc46c8c5))
+* **slack-monitor:** migrate state dir to ${CLAUDE_PLUGIN_DATA} ([1f03c51](https://github.com/FrankLedo/claude-skills/commit/1f03c5150ea7982cdbb3acff99eeca912ae2ee25))
+* **slack-monitor:** migrate state dir to ${CLAUDE_PLUGIN_DATA} ([9ab57ab](https://github.com/FrankLedo/claude-skills/commit/9ab57abcad8cdd6821b7118324064790ee8a1865))
+* **slack-monitor:** move SETUP.md to workflow/, add security guardrails ([25a79dc](https://github.com/FrankLedo/claude-skills/commit/25a79dc669fb65a3863d4e540028aef50787d8db))
+* **slack-monitor:** rename plugins/ back to skills/ for correct plugin discovery ([f06b35e](https://github.com/FrankLedo/claude-skills/commit/f06b35e2f7eaff1445b3a69d689dd35862d3fb7c))
+* **slack-monitor:** update remaining ~/.slack-monitor refs missed in initial migration ([f15c01f](https://github.com/FrankLedo/claude-skills/commit/f15c01f93ecd16e4931bff020b20152eec8b7a98))
+* **slack-monitor:** use last_scan date (not day before) for after: filter ([#18](https://github.com/FrankLedo/claude-skills/issues/18)) ([385c4f2](https://github.com/FrankLedo/claude-skills/commit/385c4f2256a85bcc70fb117c4a7f7742af47b52a)), closes [#15](https://github.com/FrankLedo/claude-skills/issues/15)
+* switch install instructions to claude CLI commands ([ccd4236](https://github.com/FrankLedo/claude-skills/commit/ccd4236604eef1e010c3584b0c7b19b9f339958f))
+* **tickler:** add install instructions and strengthen identity guard ([#20](https://github.com/FrankLedo/claude-skills/issues/20)) ([2fde2e1](https://github.com/FrankLedo/claude-skills/commit/2fde2e140ef89003985a65f92a8ae1bee25f93f4))
+* use display name in author field across plugin manifests ([2dfe5a2](https://github.com/FrankLedo/claude-skills/commit/2dfe5a2139c2db9b3dc716d2c1f52dc598a3f32a))
+* use git-subdir source type for plugin marketplace entries ([a5c2d2f](https://github.com/FrankLedo/claude-skills/commit/a5c2d2fdf1fef6f420085c7419ac5c4a7f3b515d))
+* use relative path sources in marketplace.json ([fa403d4](https://github.com/FrankLedo/claude-skills/commit/fa403d4dd600a9fc2bb4dee8cdd58f6975bdb4c5))
+
 ## [0.1.13](https://github.com/FrankLedo/claude-skills/compare/v0.1.12...v0.1.13) (2026-03-19)
 
 
