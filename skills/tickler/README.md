@@ -8,25 +8,31 @@ something changes or meets a condition you care about.
 ### Add a watch
 
 ```text
-/fxl:tickler add https://github.com/org/repo/pull/123 approved
-/fxl:tickler add https://github.com/org/repo/issues/456 closed
-/fxl:tickler add PROJ-789 status:Done
-/fxl:tickler add https://github.com/org/repo/pull/99
+/tickler add https://github.com/org/repo/pull/123 approved
+/tickler add https://github.com/org/repo/pull/123 merged
+/tickler add https://github.com/org/repo/pull/123 changes-requested
+/tickler add https://github.com/org/repo/pull/123 new-comment
+/tickler add https://github.com/org/repo/issues/456 closed
+/tickler add https://github.com/org/repo/issues/456 new-comment
+/tickler add https://github.com/org/repo/issues/456 labeled:bug
+/tickler add PROJ-789 status:Done
+/tickler add PROJ-789 new-comment
+/tickler add https://github.com/org/repo/pull/99
 ```
 
 ### Check now
 
 ```text
-/fxl:tickler
+/tickler
 ```
 
 ### Manage
 
 ```text
-/fxl:tickler list
-/fxl:tickler remove https://github.com/org/repo/pull/123
-/fxl:tickler stop
-/fxl:tickler setup
+/tickler list
+/tickler remove https://github.com/org/repo/pull/123
+/tickler stop
+/tickler setup
 ```
 
 ## Conditions

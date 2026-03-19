@@ -1,7 +1,7 @@
 # Tickler — Setup Wizard
 
 Read when `${CLAUDE_PLUGIN_DATA}/config.json` is missing or when
-the user runs `/fxl:tickler setup`.
+the user runs `/tickler setup`.
 
 ### Step 1 — Notification method
 

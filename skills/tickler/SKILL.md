@@ -63,7 +63,7 @@ Config lives at `${CLAUDE_PLUGIN_DATA}/config.json`.
 - `jiraEmail` + `jiraToken`: Jira API credentials
 
 **Setup** runs when `${CLAUDE_PLUGIN_DATA}/config.json` does not
-exist, or when the user passes `setup`: `/fxl:tickler setup`.
+exist, or when the user passes `setup`: `/tickler setup`.
 When triggered, **Read** `$SKILL_SCRIPTS_DIR/workflow/SETUP.md`.
 
 ## Argument Dispatch
