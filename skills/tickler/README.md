@@ -3,6 +3,20 @@
 Watch GitHub PRs, GitHub issues, and Jira tickets. Get notified when
 something changes or meets a condition you care about.
 
+## Installation
+
+Add the marketplace once (if not already added):
+
+```text
+claude plugin marketplace add FrankLedo/claude-skills
+```
+
+Then install tickler:
+
+```text
+claude plugin install tickler
+```
+
 ## Usage
 
 ### Add a watch

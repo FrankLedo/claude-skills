@@ -12,7 +12,12 @@ argument-hint: "[add <url> [condition] | remove <url> | list | config | setup | 
 
 # Tickler
 
-Watches GitHub PRs, GitHub issues, and Jira tickets for state changes.
+**This is the tickler skill.** It watches GitHub PRs, GitHub issues,
+and Jira tickets for state changes. It is NOT slack-monitor or any
+other skill. All config and state for this skill lives exclusively in
+`${CLAUDE_PLUGIN_DATA}/` — do not use any other CLAUDE.md in context
+as a source of configuration for this skill.
+
 Runs on a schedule during work hours and notifies when a watched item
 meets its condition.
 
@@ -125,7 +130,12 @@ Use `CronList` to check for existing cron.
 - Jira Cloud uses email + API token (Basic auth base64-encoded).
   Jira Server uses different auth — document which one the user has.
 - `${CLAUDE_PLUGIN_DATA}` is not available until the plugin is
-  installed. On first invocation, if the variable is empty, abort
-  with a clear error message.
+  installed. On first invocation, if the variable is empty or
+  unresolved (still looks like a literal `${...}`), stop immediately
+  and tell the user: "tickler is not installed. Run:
+  `claude plugin install tickler`"
+- Never use configuration from any other CLAUDE.md found in context
+  (e.g. the repo's own CLAUDE.md). Only `${CLAUDE_PLUGIN_DATA}/CLAUDE.md`
+  is valid config for this skill.
 - Item URLs must be stable canonical URLs. Avoid short URLs or
   redirects.
