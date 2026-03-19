@@ -6,21 +6,11 @@
   },
   "plugins": [
     {
-      "name": "slack-monitor",
-      "description": "Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending.",
+      "name": "fxl",
+      "description": "Claude Code skills by Frank Ledo — includes slack-monitor and tickler.",
       "source": {
-        "source": "git-subdir",
-        "repo": "FrankLedo/claude-skills",
-        "subdir": "skills/slack-monitor"
-      }
-    },
-    {
-      "name": "tickler",
-      "description": "Watch GitHub PRs, issues, and Jira tickets for state changes. Notifies when a watched item meets its condition.",
-      "source": {
-        "source": "git-subdir",
-        "repo": "FrankLedo/claude-skills",
-        "subdir": "skills/tickler"
+        "source": "github",
+        "repo": "FrankLedo/claude-skills"
       }
     }
   ]
