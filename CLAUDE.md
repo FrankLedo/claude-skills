@@ -60,4 +60,5 @@ MCP dependencies: `slack_search_public_and_private`, `slack_read_thread`, `slack
 1. Create `skills/<skill-name>/` with `SKILL.md`, `workflow/`, `templates/`, and `.claude-plugin/plugin.json`
 2. Add the skill to `release-please-config.json` under `packages`
 3. Update root `README.md` skills table
-4. Reference `planning/` for in-progress specs (not published to marketplace)
+4. Add the skill to `.claude-plugin/marketplace.json` — this is what the Claude Code marketplace reads; omitting it means the skill won't appear to users
+5. Reference `planning/` for in-progress specs (not published to marketplace)
