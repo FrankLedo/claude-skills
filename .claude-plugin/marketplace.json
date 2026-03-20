@@ -7,12 +7,12 @@
   "plugins": [
     {
       "name": "slack-monitor",
-      "source": "./skills/slack-monitor",
+      "source": "./plugins/slack-monitor",
       "description": "Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending."
     },
     {
       "name": "tickler",
-      "source": "./skills/tickler",
+      "source": "./plugins/tickler",
       "description": "Watch GitHub PRs, issues, and Jira tickets for state changes. Notifies when a watched item meets its condition."
     }
   ]

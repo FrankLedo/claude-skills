@@ -14,12 +14,12 @@
         },
         {
           "type": "json",
-          "path": "skills/slack-monitor/.claude-plugin/plugin.json",
+          "path": "plugins/slack-monitor/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
         },
         {
           "type": "json",
-          "path": "skills/tickler/.claude-plugin/plugin.json",
+          "path": "plugins/tickler/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
         }
       ]

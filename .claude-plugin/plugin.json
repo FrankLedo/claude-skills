@@ -12,5 +12,5 @@
     "productivity",
     "workflow"
   ],
-  "skills": "./skills/"
+  "plugins": "./plugins/"
 }
