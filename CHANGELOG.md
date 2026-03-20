@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16](https://github.com/FrankLedo/claude-skills/compare/v0.1.15...v0.1.16) (2026-03-20)
+
+
+### Bug Fixes
+
+* **slack-monitor:** run Slack searches directly in monitor agent ([ff6bd50](https://github.com/FrankLedo/claude-skills/commit/ff6bd50452ebd6a503293e478b168aaca2011e51))
+
 ## [0.1.15](https://github.com/FrankLedo/claude-skills/compare/v0.1.14...v0.1.15) (2026-03-20)
 
 
