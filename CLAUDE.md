@@ -27,7 +27,7 @@ plugins/<plugin-name>/
     workflow/                  — on-demand workflow files
     templates/                 — default state files copied on setup
     scripts/                   — optional Node.js helpers (built-ins only, no npm)
-    agents/                    — optional agent prompt files for isolated subagent dispatch
+    agents/                    — optional agent prompt files (e.g., `monitor-prompt.md`); read by SKILL.md and dispatched via the Agent tool to run the monitor cycle in isolation, preventing cross-skill context contamination
 ```
 
 The `skills/<skill-name>/` nesting follows the official `anthropics/claude-plugins-official` structure where `plugins/<plugin>/skills/<skill>/SKILL.md` is the canonical path.
@@ -67,6 +67,7 @@ MCP dependencies: `slack_search_public_and_private`, `slack_read_thread`, `slack
 3. **Delegate mechanical work to subagents** — use `haiku` model for expensive search/filter operations
 4. **State in `${CLAUDE_PLUGIN_DATA}/`** — never hardcode paths like `~/.plugin-name/`
 5. **Scheduling lives in SKILL.md, not the agent** — after a monitor agent returns, SKILL.md handles CronCreate/CronList. Scheduling logic is intentionally duplicated across plugins (not shared) because each plugin is independently installable with no guaranteed shared file path.
+6. **MCP-first for external APIs** — prefer MCP tools when available (no Bash permission needed), fall back to `gh` CLI (already permitted for GitHub), then Node.js scripts as last resort
 
 ## Adding a New Plugin
 
