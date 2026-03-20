@@ -48,6 +48,10 @@ which is auto-loaded as context. Key fields:
 
 - `notify`: `"direct"` (print to terminal) or `"slack"` (DM to self)
 - `slackUserId`: required if `notify` is `"slack"` — your Slack user ID
+- `startHour`: work hours start, 0–23, user's local time (default `8`)
+- `endHour`: work hours end, 0–23, user's local time (default `18`)
+- `days`: working days range e.g. `1-5` (Mon=1 Sun=7, default `1-5`)
+- `interval`: check interval in minutes (default `15`)
 - `githubToken`: optional for public repos; required for private
 - `jiraBaseUrl`: e.g. `https://myorg.atlassian.net`
 - `jiraEmail` + `jiraToken`: Jira API credentials
@@ -81,7 +85,8 @@ Parse `$ARGUMENTS` before doing anything else:
    - `${CLAUDE_PLUGIN_DATA}/tickler.json` — if missing or empty, proceed
      to scheduling (step 5) without dispatching the agent.
 
-2. Compute `local_hour` and `local_dow` from current time and user's timezone.
+2. Compute `current_time` (current ISO 8601 UTC timestamp), `local_hour`,
+   and `local_dow` from current time and user's timezone.
 
 3. **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`.
 
@@ -89,6 +94,7 @@ Parse `$ARGUMENTS` before doing anything else:
    - `SKILL_SCRIPTS_DIR=<resolved path>`
    - `CLAUDE_PLUGIN_DATA=<resolved path>`
    - All config values from CLAUDE.md frontmatter
+   - `current_time=<ISO 8601 UTC timestamp>`
    - `local_hour=<N>`, `local_dow=<N>`
 
 5. Receive `MONITOR_SUMMARY` from the agent. State writes (state.json) are

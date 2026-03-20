@@ -23,6 +23,8 @@ skill loads. Use that path directly as
 ```
 SKILL.md           — core workflow (this file)
 README.md          — user-facing documentation
+agents/
+  monitor-prompt.md — isolated monitor agent prompt
 workflow/          — on-demand workflow details:
   SETUP.md         — first-run setup wizard
   GUARDRAILS.md    — safety limits and rules
