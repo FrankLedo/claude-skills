@@ -12,12 +12,7 @@ argument-hint: "[add <url> [condition] | remove <url> | list | config | setup | 
 
 # Tickler
 
-**This is the tickler skill.** It watches GitHub PRs, GitHub issues,
-and Jira tickets for state changes. It is NOT slack-monitor or any
-other skill. All config and state for this skill lives exclusively in
-`${CLAUDE_PLUGIN_DATA}/` — do not use any other CLAUDE.md in context
-as a source of configuration for this skill.
-
+Watches GitHub PRs, GitHub issues, and Jira tickets for state changes.
 Runs on a schedule during work hours and notifies when a watched item
 meets its condition.
 
@@ -30,10 +25,12 @@ are at `$SKILL_SCRIPTS_DIR/scripts/`.
 ```
 SKILL.md         — core workflow (this file)
 README.md        — user-facing docs
+agents/
+  monitor-prompt.md — isolated monitor agent prompt
 workflow/
   SETUP.md       — first-run setup wizard
   ADD.md         — add / remove / list items
-  CHECK.md       — fetch state and detect changes
+  CHECK.md       — fetch state and detect changes (used by monitor agent)
   NOTIFY.md      — notification logic (direct / Slack)
   FORMATS.md     — tickler.json and state.json schemas
 scripts/
@@ -74,54 +71,41 @@ Parse `$ARGUMENTS` before doing anything else:
 | `list` | Read `workflow/ADD.md` → list items |
 | `config` | Resolve `${CLAUDE_PLUGIN_DATA}` and print the full path to `CLAUDE.md`, then show current config values |
 | `stop` | Cancel scheduled cron, confirm to user |
-| *(none)* | Run a check cycle (Steps 1–5 below) |
+| *(none)* | Run a check cycle (see below) |
 
-## Check Cycle
+## Check Cycle (no-arg invocation)
 
-### Step 1 — Initialize
+1. In parallel, **Read**:
+   - `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` — parse YAML frontmatter only.
+     If missing, run setup.
+   - `${CLAUDE_PLUGIN_DATA}/tickler.json` — if missing or empty, proceed
+     to scheduling (step 5) without dispatching the agent.
 
-In parallel:
-1. **Read** `${CLAUDE_PLUGIN_DATA}/CLAUDE.md`. If missing, run setup.
-2. **Read** `${CLAUDE_PLUGIN_DATA}/tickler.json`. If missing or empty
-   array, skip to Step 4 (still schedule next run).
-3. **Read** `${CLAUDE_PLUGIN_DATA}/state.json`. If missing, treat as
-   empty object `{}`.
+2. Compute `local_hour` and `local_dow` from current time and user's timezone.
 
-Compute:
-- `local_hour` — current hour in user's local timezone
-- `local_dow` — day of week (1=Mon, 7=Sun)
+3. **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`.
 
-### Step 2 — Check Items
+4. **Dispatch Agent** with the monitor prompt. Pass as part of the prompt text:
+   - `SKILL_SCRIPTS_DIR=<resolved path>`
+   - `CLAUDE_PLUGIN_DATA=<resolved path>`
+   - All config values from CLAUDE.md frontmatter
+   - `local_hour=<N>`, `local_dow=<N>`
 
-**Read** `$SKILL_SCRIPTS_DIR/workflow/CHECK.md` and process each item
-in `tickler.json`. Skip items where `snoozed_until` is in the future.
+5. Receive `MONITOR_SUMMARY` from the agent. State writes (state.json) are
+   handled by the monitor agent.
 
-Delegate all fetches to a **haiku-model Agent subagent** — it runs
-all API calls in parallel and returns a list of changed items.
+6. **Schedule next run** using `CronList` then `CronCreate`:
+   - Compute `local_hour` and `local_dow` if not yet done
+   - Outside work hours (`local_hour >= endHour` or `local_hour < startHour`
+     or `local_dow` outside `days`):
+     → one-shot cron for `startHour:03` on next active day
+   - Within work hours:
+     → recurring cron at `interval` minutes
+   - Skip CronCreate if a matching cron already exists per CronList.
 
-### Step 3 — Notify
-
-If any items have changes, **Read**
-`$SKILL_SCRIPTS_DIR/workflow/NOTIFY.md` and deliver notifications.
-
-**Short-circuit:** If no items changed, skip Step 3 entirely.
-
-### Step 4 — Save State
-
-**Write** updated `${CLAUDE_PLUGIN_DATA}/state.json` with latest
-state for all items.
-
-### Step 5 — Schedule Next Run
-
-Use `CronList` to check for existing cron.
-
-**Work hours gate** (using `local_hour`, `local_dow`, config
-`workHours`):
-
-- **Within work hours**: schedule recurring cron at `interval` minutes
-- **Outside work hours**: if already past `endHour`, schedule one-shot
-  for `startHour:03` on the next active day (skip weekends if
-  `days` is `1-5`)
+7. **Report** to user:
+   - items_checked, items_changed, notifications_sent (from MONITOR_SUMMARY)
+   - Next run scheduled for: `<time>`
 
 ## Gotchas
 
