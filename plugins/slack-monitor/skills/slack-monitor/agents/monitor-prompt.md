@@ -36,7 +36,12 @@ config files to re-derive them.
 | `last_scan` | ISO 8601 UTC timestamp of last scan |
 | `current_time` | ISO 8601 UTC timestamp (now, at agent launch) |
 
+**Note:** All path variables are injected as resolved absolute paths — treat them as literal strings, not shell variables to expand.
+
 ## Steps
+
+NOTE: Scheduling (CronCreate / CronList) is NOT performed by this
+agent. The parent SKILL.md handles scheduling after this agent returns.
 
 ### Step 1: Initialize
 
@@ -75,8 +80,8 @@ If `selfDmChannel` is empty, skip to Step 2 (count = 0).
 searches in parallel, filters results, and returns only the actionable
 message list, unique senders, and stats.
 
-**CRITICAL:** Every cycle MUST run Searches A (DMs) and B (@mentions).
-Never skip A or B.
+**CRITICAL:** Every cycle MUST run Searches A (DMs), B (@mentions), and
+D (watched channels). Never skip A, B, or D.
 
 Use `slack_search_public_and_private` with:
 - `sort: timestamp`
@@ -90,9 +95,9 @@ modifier in the query string only, then filter by `message_ts`.
 
 **Search A** — `"to:me after:<after_date>"`
 
-**Search B** — `"<@$userId> after:<after_date>"`
+**Search B** — `"<@<userId>> after:<after_date>"`
 
-**Search C** — `"from:<@$userId> is:thread after:<after_date>"`
+**Search C** — `"from:<@<userId>> is:thread after:<after_date>"`
 (check `search_cache.json` before reading threads — skip any thread_ts
 already in the cache)
 
@@ -130,22 +135,13 @@ Track totals: `auto_sent`, `queued`.
 
 **Write** `current_time` to `${CLAUDE_PLUGIN_DATA}/last_scan`.
 
-If the search cache was modified during Step 2 (new threads read),
-**Write** the updated cache to `${CLAUDE_PLUGIN_DATA}/search_cache.json`.
-
-### Step 6: Learn and Improve
-
-Handled within HANDLE.md (loaded in Step 4). If no messages were found
-(Step 3 short-circuit), skip this step entirely — do not re-read
-HANDLE.md.
-
-NOTE: Scheduling (CronCreate / CronList) is NOT performed by this
-agent. The parent SKILL.md handles scheduling after this agent returns.
+If the haiku agent returned new thread reads not previously in the
+cache, **Write** the merged cache to
+`${CLAUDE_PLUGIN_DATA}/search_cache.json`.
 
 ## Return Value
 
-Output a `MONITOR_SUMMARY` block as the final output. Include no other
-trailing text after it.
+Output ONLY the MONITOR_SUMMARY block. No preamble, no explanation, no trailing text.
 
 ```
 MONITOR_SUMMARY
