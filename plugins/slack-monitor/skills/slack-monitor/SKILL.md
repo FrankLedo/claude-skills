@@ -120,6 +120,8 @@ For file format details, **Read**
    - `current_time=<timestamp>`
 
 5. Receive the `MONITOR_SUMMARY` block from the agent.
+   State writes (`last_scan`, `search_cache.json`) are handled by the
+   monitor agent (see `agents/monitor-prompt.md` Step 5).
 
 6. **Schedule next scan** using `CronList` then `CronCreate`:
    - Compute `local_hour` and `local_dow` from current time and user
@@ -130,8 +132,18 @@ For file format details, **Read**
      - Otherwise → one-shot cron for `startHour:03` on next active day
    - Within working hours:
      - If `active: true` in MONITOR_SUMMARY → use `activeInterval`
+       (See `agents/monitor-prompt.md` for the definition of `active`
+       and all MONITOR_SUMMARY fields.)
      - Otherwise → use `interval`
+   - Use `CronCreate` to schedule the cron (skip if a matching cron
+     already exists per `CronList`).
 
 7. **Report** to user:
-   - All fields from MONITOR_SUMMARY
+   - `self_dm_commands`: N
+   - `dm_replies_processed`: N sent / N skipped
+   - `messages_found`: N (DMs: N / mentions: N / threads: N)
+   - `auto_sent`: N
+   - `queued`: N
+   - `pending_queue_depth`: N
+   - `active`: true|false
    - Next scan scheduled for: `<time>`
