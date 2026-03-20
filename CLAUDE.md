@@ -21,6 +21,8 @@ Each skill lives in `skills/<skill-name>/` and follows a **token-optimized, on-d
 - **`SKILL.md`** — always-loaded entry point (~200-300 lines); contains orchestration logic and references to workflow files
 - **`workflow/`** — specialized files read only when needed (e.g., `HANDLE.md` only when messages exist, `SETUP.md` only on first run)
 - **`templates/`** — default config files copied to user's state directory on setup
+- **`scripts/`** — optional Node.js helper scripts invoked via `Bash` (e.g., `fetch-github.js`, `fetch-jira.js`); use when API calls need structured parsing that is awkward in pure Claude tool calls. No npm packages — only Node.js built-ins.
+- **`README.md`** — optional user-facing documentation for the skill
 - **`.claude-plugin/plugin.json`** — skill metadata (id, name, description, version)
 
 The pattern keeps idle scan cycles minimal by deferring file reads until actually needed.
@@ -42,6 +44,7 @@ Workflow files (in `workflow/`):
 - `SETUP.md` — first-run wizard
 - `HANDLE.md` — message handling + draft generation
 - `REVIEW.md` — review modes (slack DM vs. direct CLI)
+- `DM-REVIEW.md` — processes user replies to DM review threads (slack reviewMode only)
 - `GUARDRAILS.md` — safety limits and rules
 - `SELF-DM.md` — processing commands sent via self-DM
 - `FORMATS.md` — state file JSON schemas
@@ -50,7 +53,7 @@ MCP dependencies: `slack_search_public_and_private`, `slack_read_thread`, `slack
 
 ## Design Principles (for adding/modifying skills)
 
-1. **No scripts or dependencies** — use Claude's native Read/Write/Edit/Bash tools and MCP integrations only; avoid npm, shell scripts, or external dependencies in core workflows
+1. **No npm packages or build steps** — use Claude's native Read/Write/Edit/Bash tools and MCP integrations; `scripts/` Node.js helpers are acceptable if they use only built-in modules and are invoked via `Bash`
 2. **Token efficiency** — load files on-demand via `Read` tool; minimize what's always loaded
 3. **Delegate mechanical work to subagents** — use `haiku` model for expensive search/filter operations
 4. **State in `${CLAUDE_PLUGIN_DATA}/`** — never hardcode paths like `~/.skill-name/`
@@ -58,7 +61,7 @@ MCP dependencies: `slack_search_public_and_private`, `slack_read_thread`, `slack
 ## Adding a New Skill
 
 1. Create `skills/<skill-name>/` with `SKILL.md`, `workflow/`, `templates/`, and `.claude-plugin/plugin.json`
-2. Add the skill to `release-please-config.json` under `packages`
+2. Add the skill's `plugin.json` path to the `extra-files` array in `release-please-config.json` (there is a single root package `.`; do not add a new entry under `packages`)
 3. Update root `README.md` skills table
 4. Add the skill to `.claude-plugin/marketplace.json` — this is what the Claude Code marketplace reads; omitting it means the skill won't appear to users
 5. Reference `planning/` for in-progress specs (not published to marketplace)

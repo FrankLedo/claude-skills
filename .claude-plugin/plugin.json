@@ -1,7 +1,7 @@
 {
   "name": "fxl",
   "version": "0.1.14",
-  "description": "A collection of Claude Code skills by FXL",
+  "description": "Productivity skills for Slack monitoring and GitHub/Jira tracking",
   "author": {
     "name": "Frank Ledo",
     "url": "https://github.com/FrankLedo"
