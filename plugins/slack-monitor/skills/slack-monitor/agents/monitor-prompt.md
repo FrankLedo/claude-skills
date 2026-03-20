@@ -76,9 +76,8 @@ If `selfDmChannel` is empty, skip to Step 2 (count = 0).
 
 ### Step 2: Search Slack
 
-**Delegate to a haiku-model Agent subagent.** The haiku agent runs all
-searches in parallel, filters results, and returns only the actionable
-message list, unique senders, and stats.
+Run all applicable searches directly (MCP tools are not available to
+subagents). Run A, B, and D in parallel; C and E only if applicable.
 
 **CRITICAL:** Every cycle MUST run Searches A (DMs), B (@mentions), and
 D (watched channels). Never skip A, B, or D.
@@ -110,14 +109,12 @@ with `oldest: <last_scan_epoch>`, `limit: 20`,
 
 ### Step 3: Deduplicate and Filter
 
-The haiku agent filters inline:
-
 1. Remove messages where you (userId) sent the last reply (already
    replied)
 2. Remove duplicates by `message_ts` + channel
 3. Filter to only messages with timestamp > `last_scan_epoch`
 
-Returns: `actionable` list, `unique_senders`, `stats` (counts by type:
+Produce: `actionable` list, `unique_senders`, `stats` (counts by type:
 DMs, mentions, threads, channel).
 
 **Short-circuit on empty:** If 0 actionable messages AND no self-DM
