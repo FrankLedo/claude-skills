@@ -99,133 +99,39 @@ This path is provided by the Claude plugin framework
 For file format details, **Read**
 `$SKILL_SCRIPTS_DIR/workflow/FORMATS.md` when needed.
 
-## Workflow
+## Monitor Cycle (no-arg invocation)
 
-### 1. Initialize
+1. In parallel, **Read**:
+   - `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` — parse YAML frontmatter only.
+     If missing, run setup (see above).
+   - `${CLAUDE_PLUGIN_DATA}/last_scan` — ISO 8601 timestamp.
+     If missing, default to 15 minutes ago.
 
-**Read** these two files in parallel:
+2. Compute `current_time` (current UTC ISO 8601 timestamp).
 
-1. `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` — parse YAML
-   frontmatter only (not the body). If missing, run
-   setup (see above).
-2. `${CLAUDE_PLUGIN_DATA}/last_scan` — ISO 8601 timestamp.
-   If missing, default to 15 minutes ago.
+3. **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`.
 
-Compute inline:
+4. **Dispatch Agent** with the monitor prompt. Pass the following as
+   part of the prompt text:
+   - `SKILL_SCRIPTS_DIR=<resolved path>`
+   - `CLAUDE_PLUGIN_DATA=<resolved path>`
+   - All config values from CLAUDE.md frontmatter
+   - `last_scan=<timestamp>`
+   - `current_time=<timestamp>`
 
-- `current_time` — current UTC ISO 8601
-- `last_scan_epoch` — last_scan as Unix epoch seconds
-- `after_date` — calendar date of last_scan
-  (for Slack `after:` query modifier)
-- `local_hour` — current hour (0–23) in user's
-  timezone
-- `local_dow` — current day-of-week (1=Mon, 7=Sun)
+5. Receive the `MONITOR_SUMMARY` block from the agent.
 
-Validate: if `userId` is empty, abort with
-`"GUARDRAIL: userId not configured"`.
+6. **Schedule next scan** using `CronList` then `CronCreate`:
+   - Compute `local_hour` and `local_dow` from current time and user
+     timezone
+   - Outside working hours (`local_hour >= endHour` or
+     `local_hour < startHour` or `local_dow` outside `days`):
+     - If `offhoursInterval` is set → recurring cron at that interval
+     - Otherwise → one-shot cron for `startHour:03` on next active day
+   - Within working hours:
+     - If `active: true` in MONITOR_SUMMARY → use `activeInterval`
+     - Otherwise → use `interval`
 
-### 1.5. Process DM Review Replies
-
-If `reviewMode` is `slack`, **Read**
-`$SKILL_SCRIPTS_DIR/workflow/DM-REVIEW.md` and follow
-the DM review process.
-
-If `reviewMode` is `direct`, skip this step.
-
-### 1.7. Process Self-DM Commands
-
-If `selfDmChannel` is set, **Read**
-`$SKILL_SCRIPTS_DIR/workflow/SELF-DM.md` and follow
-the self-DM process.
-
-If `selfDmChannel` is empty, skip to Step 2.
-
-### 2. Search Slack
-
-**Delegate to a haiku-model Agent subagent.** Steps 2–3
-are mechanical work. The haiku agent runs all searches
-in parallel, filters results, and returns only the
-actionable message list + unique senders.
-
-**CRITICAL:** Every cycle MUST run Searches A (DMs),
-B (@mentions), and D (watched channels). Never skip
-A or B.
-
-Use `slack_search_public_and_private` with
-`sort: timestamp`, `sort_dir: asc`,
-`include_bots: false`, `response_format: "concise"`,
-`include_context: false`. **Do NOT pass the `after`
-Unix timestamp parameter** — use the date modifier in
-the query string only, then filter by `message_ts`.
-
-**Search A** — `"to:me after:<after_date>"`
-
-**Search B** — `"<@$userId> after:<after_date>"`
-
-**Search C** — `"from:<@$userId> is:thread after:<after_date>"`
-(check search cache before reading threads)
-
-**Search D** — `slack_read_channel` for each channel in
-`channels` with `oldest: <last_scan_epoch>`, `limit: 20`,
-`response_format: "detailed"`
-
-**Search E** — one search per subteam in `groups`:
-`"<!subteam^SXXXXXXXXXX> after:<after_date>"`
-
-### 3. Deduplicate and Filter
-
-The haiku agent filters inline:
-
-1. Remove already-replied (you sent the last reply)
-2. Remove duplicates by `message_ts` + channel
-3. Filter by timestamp > `last_scan_epoch`
-
-Returns: `actionable` list, `unique_senders`, `stats`.
-
-**Short-circuit on empty:** If 0 actionable AND no
-self-DM commands in Step 1.7, skip to Step 5.
-
-### 4. Handle Messages
-
-**Read** `$SKILL_SCRIPTS_DIR/workflow/GUARDRAILS.md`
-and `$SKILL_SCRIPTS_DIR/workflow/HANDLE.md`, then
-process each actionable message.
-
-### 5. Update Timestamp
-
-**Write** `current_time` to `${CLAUDE_PLUGIN_DATA}/last_scan`.
-Also write search cache if modified.
-
-### 6. Schedule Next Scan
-
-Use `CronList` to check for existing cron.
-
-**Working hours gate** (using `local_hour`, `local_dow`):
-
-- Outside working hours (`>= endHour` or `< startHour`
-  or day outside `days`):
-  - If `offhoursInterval` is set, schedule recurring
-    cron at that interval
-  - Otherwise, schedule one-shot for `startHour:03`
-    on the next active day
-- Within working hours: use `interval` (idle) or
-  `activeInterval` (active conversation detected)
-
-**Active** = messages found this cycle, pending queue
-has items (slack mode only), or self-DM commands
-processed.
-
-### 7. Learn and Improve
-
-Handled in HANDLE.md (loaded in Step 4). If no messages
-were found, skip entirely.
-
-### 8. Report Summary
-
-- Self-DM commands: N
-- DM replies processed: N sent / N skipped
-- Searched from / to timestamps
-- Messages found (DMs / mentions / threads)
-- Auto-sent / queued
-- Pending queue depth
-- Next scan from: `<new timestamp>`
+7. **Report** to user:
+   - All fields from MONITOR_SUMMARY
+   - Next scan scheduled for: `<time>`
