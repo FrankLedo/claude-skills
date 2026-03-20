@@ -19,14 +19,31 @@ The subagent must:
 
 ## GitHub PR — fetch
 
+**Use the first available method in order:**
+
+**Method 1 — GitHub MCP** (preferred, no Bash permission needed):
+If `github_get_pull_request` or equivalent GitHub MCP tool appears in your
+tool list, use it. Extract: `state`, `title`, `mergedAt` (non-null = merged),
+latest review states per reviewer (APPROVED / CHANGES_REQUESTED), total
+comment count, `updatedAt`.
+
+**Method 2 — `gh` CLI** (no extra permission needed, already allowed):
+```bash
+gh api repos/{owner}/{repo}/pulls/{number} \
+  --jq '{state:.state,title:.title,merged_at:.merged_at,comments:.comments,updated_at:.updated_at}'
+gh api repos/{owner}/{repo}/pulls/{number}/reviews \
+  --jq '[.[] | {user:.user.login,state:.state}]'
+```
+Parse owner/repo/number from the URL pattern `github.com/{owner}/{repo}/pull/{number}`.
+
+**Method 3 — Node.js script** (fallback only, may prompt for Bash permission):
 ```bash
 node $SKILL_SCRIPTS_DIR/scripts/fetch-github.js \
   --url "<pr-url>" \
   --token "<githubToken or empty>"
 ```
 
-Output JSON:
-
+Normalise output to this shape regardless of method used:
 ```json
 {
   "status": "open|closed|merged",
@@ -40,7 +57,6 @@ Output JSON:
 ```
 
 **Condition matching for github-pr:**
-
 - `approved`: `approvals >= 1`
 - `merged`: `merged === true`
 - `closed`: `status === "closed"` and `merged === false`
@@ -50,8 +66,26 @@ Output JSON:
 
 ## GitHub Issue — fetch
 
-Same script, same flags. Output JSON:
+**Use the first available method in order:**
 
+**Method 1 — GitHub MCP** (preferred):
+If `github_get_issue` or equivalent appears in your tool list, use it.
+Extract: `state`, `title`, `labels[].name`, total comment count, `updatedAt`.
+
+**Method 2 — `gh` CLI**:
+```bash
+gh api repos/{owner}/{repo}/issues/{number} \
+  --jq '{state:.state,title:.title,labels:[.labels[].name],comments:.comments,updated_at:.updated_at}'
+```
+
+**Method 3 — Node.js script** (fallback):
+```bash
+node $SKILL_SCRIPTS_DIR/scripts/fetch-github.js \
+  --url "<issue-url>" \
+  --token "<githubToken or empty>"
+```
+
+Normalise output:
 ```json
 {
   "status": "open|closed",
@@ -63,7 +97,6 @@ Same script, same flags. Output JSON:
 ```
 
 **Condition matching for github-issue:**
-
 - `closed`: `status === "closed"`
 - `new-comment`: `comment_count > state.comment_count`
 - `labeled:<label>`: label appears in `labels[]` and was not there before
@@ -71,6 +104,14 @@ Same script, same flags. Output JSON:
 
 ## Jira — fetch
 
+**Use the first available method in order:**
+
+**Method 1 — Jira MCP** (preferred, no Bash permission needed):
+If a Jira MCP tool (e.g. `get_issue`, `jira_get_issue`) appears in your
+tool list, use it. Extract: status name, summary, total comment count,
+last updated timestamp.
+
+**Method 2 — Node.js script**:
 ```bash
 node $SKILL_SCRIPTS_DIR/scripts/fetch-jira.js \
   --ticket "<PROJ-123>" \
@@ -79,8 +120,7 @@ node $SKILL_SCRIPTS_DIR/scripts/fetch-jira.js \
   --token "<jiraToken>"
 ```
 
-Output JSON:
-
+Normalise output:
 ```json
 {
   "status": "In Progress",
@@ -91,7 +131,6 @@ Output JSON:
 ```
 
 **Condition matching for jira:**
-
 - `status:<value>`: `status === value` (case-insensitive)
 - `new-comment`: `comment_count > state.comment_count`
 - `any`: any field differs
