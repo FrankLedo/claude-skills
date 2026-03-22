@@ -43,6 +43,28 @@ during Search C follow-ups. Avoids redundant
 - **Prune:** Before writing, remove entries where
   `checked_at_epoch` is > 86400 seconds old
 
+## Cycle Checkpoint (`cycle_checkpoint.json`)
+
+Written at cycle start; deleted on successful completion.
+Presence of this file indicates an interrupted cycle.
+
+```json
+{
+  "started_at": "ISO 8601 UTC",
+  "last_step": "init|dm_review|self_dm|search|handle|auth_error",
+  "processed_ids": ["<message_ts>-<channel_id>", ...]
+}
+```
+
+- **On startup:** If `started_at` is within 30 minutes of now,
+  resume. Skip messages whose `id` is in `processed_ids`.
+- **On success:** Delete this file (Step 5).
+- **On auth error:** `last_step` is `"auth_error"` — do not resume
+  automatically; wait for user to fix the token.
+- If `started_at` > 30 min ago and the cycle is not done, the
+  previous cycle was likely abandoned (session restart). Start fresh
+  and overwrite.
+
 ## Pending Review Queue (`pending_review.json`)
 
 JSON array of messages awaiting human review:
