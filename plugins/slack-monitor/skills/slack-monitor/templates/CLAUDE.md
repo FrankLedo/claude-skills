@@ -7,7 +7,8 @@ groups:
 autoReply: true
 autoReplyConfidence: 90
 draftMode: false
-reviewMode: slack
+scanOnly: false
+reviewMode: remote-control
 interval: 15
 activeInterval: 1
 offhoursInterval:
@@ -51,8 +52,13 @@ skill.
   of being posted directly. The user can edit and send
   each draft in Slack. Avoids any "Sent with Claude"
   attribution. Default: `false`.
-- **reviewMode** — `slack` (non-blocking DM review) or
-  `direct` (inline CLI review). Default: `slack`.
+- **scanOnly** — When `true`, no messages are sent during
+  a scan cycle. All items go to pending_review.json.
+  Process with `/slack-monitor review`. Combine with
+  `--allowedTools` at invocation for strongest defense.
+- **reviewMode** — `remote-control` (queue + review command,
+  default), `direct` (inline CLI, blocking), or `slack`
+  (legacy self-DM, not recommended).
 
 ### Schedule
 

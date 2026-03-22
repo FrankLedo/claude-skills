@@ -59,6 +59,7 @@ groups:
 autoReply: true
 autoReplyConfidence: 90
 draftMode: false
+scanOnly: false
 reviewMode: remote-control
 interval: 15
 activeInterval: 1
@@ -74,6 +75,13 @@ maxQueue: 25
 ```
 
 **Required:** `userId`, `workspaceDomain`
+
+`scanOnly: true` disables all outbound messages during the monitor
+cycle — no auto-replies, no DMs, no drafts. Items are queued to
+`pending_review.json` only. Process them with `/slack-monitor review`.
+Combine with `--allowedTools` (see README) for the strongest injection
+defense: even a successful injection cannot send messages if the send
+tools are not available in the session.
 
 `reviewMode` options:
 - `remote-control` *(default)* — queue items non-blocking; user

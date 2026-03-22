@@ -49,7 +49,8 @@ A template with defaults is at `templates/CLAUDE.md`.
 | `autoReply`            | `true`     | Enable automatic replies for high-confidence drafts                  |
 | `autoReplyConfidence`  | `90`       | Minimum confidence score (0-100) to auto-send                        |
 | `draftMode`            | `false`    | When `true`, replies are created as Slack drafts instead of being posted directly. You edit and send the draft in Slack — nothing is posted on your behalf. High-confidence auto-replies also become drafts, with a CLI or DM notification. |
-| `reviewMode`           | `"slack"`  | `"slack"` (non-blocking DM review) or `"direct"` (inline CLI review) |
+| `scanOnly`             | `false`    | When `true`, no messages are sent during a scan — everything is queued. Combine with `--allowedTools` for the strongest injection defense. |
+| `reviewMode`           | `"remote-control"` | `"remote-control"` (queue + `/slack-monitor review`), `"direct"` (inline blocking), `"slack"` (legacy self-DM) |
 | `interval`             | `15`       | Minutes between scans when idle                                      |
 | `activeInterval`       | `1`        | Minutes between scans when conversations are active                  |
 | `offhoursInterval`     | `null`     | Minutes between off-hours scans (null = no off-hours polling)        |
@@ -76,7 +77,8 @@ groups: SXXXXXXXXXX
 autoReply: true
 autoReplyConfidence: 90
 draftMode: false
-reviewMode: slack
+scanOnly: false
+reviewMode: remote-control
 interval: 15
 activeInterval: 1
 offhoursInterval: 60
@@ -95,12 +97,13 @@ field descriptions.
 
 ## Review Modes
 
-### Slack Mode (default)
+### Remote-Control Mode (default)
 
-Draft replies are sent as Slack DMs to you with
-`1`/`2`/`3`/`skip` options. The scan completes
-immediately and picks up your reply on the next cycle.
-Best for background monitoring.
+The scan cycle always completes immediately — no blocking,
+no self-DMs. Messages that need review are queued to
+`pending_review.json`. Run `/slack-monitor review` to
+process the queue interactively. Works at the terminal or
+routed through `/remote-control`.
 
 ### Direct Mode
 
@@ -108,6 +111,39 @@ Draft replies are presented in the Claude Code CLI with
 clickable options. The scan blocks until you respond.
 Best for active terminal sessions where you want instant
 control.
+
+### Slack Mode (legacy)
+
+Self-DM review via Slack. Not recommended — Slack does not
+deliver notifications for messages you send to yourself.
+
+## Secure / Headless Invocation
+
+When running unattended (e.g. via cron or a background
+session), restrict which tools are available to limit the
+blast radius of a prompt injection:
+
+```bash
+# Scan only — no Slack sends possible
+claude -p "/slack-monitor" \
+  --allowedTools "mcp__slack__slack_read_channel,mcp__slack__slack_search_public_and_private,mcp__slack__slack_read_thread,Read,Write,Edit" \
+  --max-turns 20
+
+# Or combine with scanOnly: true in config for a double guard:
+# config sets intent; --allowedTools enforces it at the runtime level
+```
+
+With `--allowedTools` restricting send tools, even a
+successful prompt injection cannot post messages —
+`slack_send_message` and `slack_send_message_draft` simply
+aren't available in the session. The scan writes findings to
+`pending_review.json` and you process them separately with
+`/slack-monitor review` (a separate session where you are
+present and can review before anything is sent).
+
+Also consider setting `scanOnly: true` in your config — this
+tells the skill itself not to send during scans, independent
+of tool availability.
 
 ## What It Monitors
 
