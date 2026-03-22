@@ -2,7 +2,7 @@
 name: slack-monitor
 description: Scan Slack for unanswered DMs, @mentions, and replies to your threads since the last scan. Drafts replies and asks permission before sending each one.
 user-invocable: true
-argument-hint: "[setup | (no args to scan)]"
+argument-hint: "[setup | review | (no args to scan)]"
 ---
 
 # Slack Monitor Skill
@@ -59,7 +59,7 @@ groups:
 autoReply: true
 autoReplyConfidence: 90
 draftMode: false
-reviewMode: slack
+reviewMode: remote-control
 interval: 15
 activeInterval: 1
 offhoursInterval:
@@ -74,6 +74,14 @@ maxQueue: 25
 ```
 
 **Required:** `userId`, `workspaceDomain`
+
+`reviewMode` options:
+- `remote-control` *(default)* — queue items non-blocking; user
+  processes with `/slack-monitor review` (works locally or via
+  `/remote-control`)
+- `direct` — blocking inline review at the terminal each cycle
+- `slack` *(legacy)* — DM yourself in Slack; unreliable because
+  Slack does not notify you of your own messages
 
 ### Setup
 
@@ -100,6 +108,62 @@ This path is provided by the Claude plugin framework
 
 For file format details, **Read**
 `$SKILL_SCRIPTS_DIR/workflow/FORMATS.md` when needed.
+
+## Argument Dispatch
+
+Parse `$ARGUMENTS` before doing anything else:
+
+| Argument | Action |
+|----------|--------|
+| `setup` | Read `workflow/SETUP.md` and run wizard |
+| `review` | Process pending review queue (see below) |
+| `stop` | Cancel scheduled cron, confirm to user |
+| *(none)* | Run monitor cycle (see below) |
+
+## Review Queue (`review` argument)
+
+Processes all items in `pending_review.json` interactively.
+Works with `/remote-control` or directly at the terminal.
+
+**Remote-control detection:** Check whether the session context
+contains a `Base directory for this skill: ... remote-control ...`
+header. If yes, note it in the output so the user knows responses
+will be routed via remote-control.
+
+1. **Read** `${CLAUDE_PLUGIN_DATA}/pending_review.json`.
+   If empty or missing, report "No pending items." and stop.
+
+2. **Read** `$SKILL_SCRIPTS_DIR/workflow/REVIEW.md` for formatting rules.
+
+3. For each item in the queue (oldest first):
+
+   a. Display the message context:
+      ```
+      [N of M] From: {from} · {channel} · {time}
+      > {message_text}
+      {if thread_context: Thread: > {thread_context}}
+
+      1. Concise ({confidence}%) {if recommended: ★}
+      > {concise draft}
+
+      2. Detailed ({confidence}%) {if recommended: ★}
+      > {detailed draft}
+
+      3. Casual ({confidence}%) {if recommended: ★}
+      > {casual draft}
+      ```
+
+   b. Use `AskUserQuestion` with choices:
+      - `1 — Send concise`
+      - `2 — Send detailed`
+      - `3 — Send casual`
+      - `skip — Don't reply`
+      - `custom — Type a custom reply`
+
+   c. Execute the choice (per REVIEW.md formatting/threading rules).
+      Remove the item from the queue. Append to `saved_messages.md`.
+
+4. After all items, report: N sent, N skipped, queue now empty.
 
 ## Monitor Cycle (no-arg invocation)
 
@@ -141,11 +205,12 @@ For file format details, **Read**
      already exists per `CronList`).
 
 7. **Report** to user:
-   - `self_dm_commands`: N
-   - `dm_replies_processed`: N sent / N skipped
    - `messages_found`: N (DMs: N / mentions: N / threads: N)
    - `auto_sent`: N
-   - `queued`: N
-   - `pending_queue_depth`: N
+   - `queued`: N this cycle
+   - `pending_queue_depth`: N total awaiting review
+   - `self_dm_commands`: N
    - `active`: true|false
    - Next scan scheduled for: `<time>`
+   - If `pending_queue_depth` > 0: append
+     `→ Run /slack-monitor review to process.`

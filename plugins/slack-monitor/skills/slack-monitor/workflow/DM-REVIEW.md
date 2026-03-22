@@ -1,10 +1,16 @@
-# DM Review Reply Processing (Step 1.5)
+# DM Review Reply Processing (Step 1.5) — Legacy
 
-Read this file when `reviewMode` is `slack` (not
-`direct`).
+> **This step only runs when `reviewMode` is `slack`.**
+> The default mode is now `remote-control`, which uses
+> `/slack-monitor review` instead. This file is kept for
+> users who have `reviewMode: slack` configured.
+>
+> Note: Slack does not notify you of messages you send to
+> yourself, so pending review items may go unnoticed.
+> Consider switching to `reviewMode: remote-control`.
 
-**Skip this step if `reviewMode` is `direct`** — in
-direct mode, replies are handled inline during Step 4.6.
+**Skip this step entirely if `reviewMode` is `remote-control`
+or `direct`.**
 
 Before searching for new messages, check whether the
 user has replied to any pending DM review threads.

@@ -88,13 +88,16 @@ min ago"`
 **Validate:** if `userId` is empty or unset, abort immediately with:
 `GUARDRAIL: userId not configured`
 
-### Step 1.5: Process DM Review Replies
+### Step 1.5: Process DM Review Replies (slack mode only)
 
-If `reviewMode` is `slack`, **Read**
-`$SKILL_SCRIPTS_DIR/workflow/DM-REVIEW.md` and follow the DM review
-process. Track how many replies were sent and how many were skipped.
+**Skip this step unless `reviewMode` is `slack`.**
 
-If `reviewMode` is `direct`, skip this step (count = 0 / 0).
+In `remote-control` or `direct` mode, the pending queue is processed
+via `/slack-monitor review` — not here.
+
+If `reviewMode` is `slack`: **Read**
+`$SKILL_SCRIPTS_DIR/workflow/DM-REVIEW.md` and follow the legacy
+DM review process.
 
 ### Step 1.7: Process Self-DM Commands
 
@@ -225,16 +228,15 @@ Output ONLY the MONITOR_SUMMARY block. No preamble, no explanation, no trailing 
 
 ```
 MONITOR_SUMMARY
-self_dm_commands: N
-dm_replies_processed: N sent / N skipped
 messages_found: N (DMs: N / mentions: N / threads: N)
 auto_sent: N
 queued: N
 pending_queue_depth: N
+self_dm_commands: N
 active: true|false
 ```
 
 `active: true` if any of the following:
 - `messages_found` > 0
-- `pending_queue_depth` > 0 AND `reviewMode` is `slack`
+- `pending_queue_depth` > 0
 - `self_dm_commands` > 0

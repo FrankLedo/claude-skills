@@ -42,112 +42,81 @@ parent `thread_ts` instead.
 
 ## Review Modes
 
-`reviewMode` controls how the user reviews and approves
-draft replies. Default: `slack`.
+`reviewMode` controls how the monitor cycle handles
+messages that need review. Default: `remote-control`.
 
-| Mode     | Interface        | Blocking? |
-|----------|------------------|-----------|
-| `slack`  | Slack DMs        | No        |
-| `direct` | Claude Code CLI  | Yes       |
+| Mode             | Interface                      | Blocking? |
+|------------------|--------------------------------|-----------|
+| `remote-control` | Queue + `/slack-monitor review`| No        |
+| `direct`         | Inline at terminal each cycle  | Yes       |
+| `slack`          | Self-DM in Slack *(legacy)*    | No        |
 
 `draftMode` controls how approved replies are sent.
-When `true`, replies go to Slack as drafts the user
-edits and sends manually — no direct posting, no
-attribution. Applies in both review modes.
 
 | `draftMode` | Send method               |
 |-------------|---------------------------|
 | `false`     | `slack_send_message`      |
 | `true`      | `slack_send_message_draft`|
 
-> Notification DMs **to the user** (monitor alerts,
-> review prompts) always use `slack_send_message`
-> regardless of `draftMode`.
+> Notification DMs **to the user** always use
+> `slack_send_message` regardless of `draftMode`.
 
-### `slack` mode (non-blocking)
+### `remote-control` mode (default, non-blocking)
 
-a. Build a pending review queue item (leave `dm_ts`
-   and `dm_channel_id` as `null` for now).
+During the monitor cycle, for each message that is
+not auto-sent:
 
-b. Send a Slack DM to the user with the message
-   context and all three drafted replies. Use
-   `slack_send_message` with
-   `channel_id: $userId`. Format:
+a. Build the pending review queue item (see FORMATS.md).
+   Leave `dm_ts` and `dm_channel_id` as `null`.
 
-   Build the permalink as:
-   `https://$workspaceDomain/archives/{channel_id}/p{message_ts without dot}`
+b. **Read** the current `pending_review.json`, append
+   the item, **Write** back. Log as "queued".
 
-   ```
-   *[Monitor]*
-   _*Message from {from}*
-   {channel_name} · {human-readable time}
-   <permalink|View in Slack>_
+c. Do NOT send any DM or use `AskUserQuestion`.
+   The monitor cycle ends without waiting.
 
-   > {message_text}
-
-   {if thread_context:}
-   _Thread context:_
-   > {thread_context}
-
-   ---
-   _*1. Concise* ({confidence}%)
-   {if recommended: " — Recommended"}_
-   > {concise draft text}
-
-   _*2. Detailed* ({confidence}%)
-   {if recommended: " — Recommended"}_
-   > {detailed draft text}
-
-   _*3. Casual* ({confidence}%)
-   {if recommended: " — Recommended"}_
-   > {casual draft text}
-
-   _Reply: `1` `2` `3` `skip`_
-   ```
-
-c. Capture the `ts` from the `slack_send_message`
-   response. Update the queue item: set `dm_ts` to
-   the returned `ts` and `dm_channel_id` to `userId`.
-   Add to the pending queue: **Read** the current
-   `pending_review.json`, parse the array, append the
-   new item, **Write** the updated array back.
-
-d. Log in the summary as "queued + DM sent". Do NOT
-   use `AskUserQuestion`.
+The user processes queued items by running
+`/slack-monitor review`, which presents each item
+interactively via `AskUserQuestion`. This works
+at the terminal or routed through `/remote-control`.
 
 ### `direct` mode (blocking)
 
-a. Display the message context and all three drafts
-   in the conversation.
+For each message that is not auto-sent:
+
+a. Display the message context and all three drafts.
 
 b. Use `AskUserQuestion` with options:
    - `1 — Concise ({confidence}%)`
    - `2 — Detailed ({confidence}%)`
    - `3 — Casual ({confidence}%)`
    - `skip — Do not reply`
+   - `custom — Enter your own reply`
 
-c. Based on the user's choice:
+c. Based on choice: send or draft via `draftMode`
+   rule. Use `thread_ts` per the Threading Rule.
+   Log as "sent (direct)" or "drafted (direct)".
 
-   - **1/2/3:** If `draftMode` is `false`, send via
-     `slack_send_message`. If `draftMode` is `true`,
-     create via `slack_send_message_draft`. Use
-     `thread_ts` per the Threading Rule. Log as
-     "sent (direct review)" or
-     "drafted (direct review)".
-   - **skip:** Log as "skipped (direct review)".
-   - **Custom text:** Send or draft that text as the
-     reply per `draftMode`.
+d. **Blocks the scan cycle** — only use when the
+   user is actively at the terminal.
 
-d. This **blocks the scan cycle** — acceptable in
-   direct mode because the user is at the terminal.
+e. No pending review queue is written in this mode.
 
-e. No pending review queue is used in direct mode.
+### `slack` mode *(legacy — not recommended)*
 
-### Off-hours auto-switch
+Self-DM review via Slack. Unreliable because Slack
+does not deliver notifications for messages you send
+to yourself.
 
-When transitioning to off-hours (`local_hour >= endHour`
-or `< startHour`), **force review mode to `slack`**
-regardless of the configured `reviewMode`. Off-hours
-scans should be non-blocking. When the next scan
-detects working hours again, restore the configured
-mode.
+Preserved for existing users who have it configured.
+See DM-REVIEW.md for the full `slack` mode flow.
+
+### Off-hours behavior
+
+In `remote-control` mode, off-hours scans behave
+identically — items are queued, cycle ends immediately.
+No mode switch needed.
+
+In `direct` mode, **force to `remote-control`** when
+`local_hour >= endHour` or `< startHour`. Restore
+configured mode when working hours resume.
