@@ -1,0 +1,17 @@
+{
+  "description": "Auto-approve Bash operations within the slack-monitor plugin data directory, preventing repeated permission prompts during monitor cycles.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" allow-plugin-data",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
