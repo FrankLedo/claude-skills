@@ -267,8 +267,9 @@ Track totals: `auto_sent`, `queued`.
 If there are new thread reads not previously in the cache, **Write**
 the merged cache to `<CLAUDE_PLUGIN_DATA>/search_cache.json`.
 
-**Delete** `<CLAUDE_PLUGIN_DATA>/cycle_checkpoint.json` (cycle
-completed successfully — no resume needed).
+**Write** `{}` to `<CLAUDE_PLUGIN_DATA>/cycle_checkpoint.json` (cycle
+completed successfully — nullifies the checkpoint so the next cycle
+starts fresh without triggering Bash permission prompts).
 
 ## Return Value
 

@@ -136,7 +136,7 @@ message to {channel}"`.
   `slack_read_channel`, `slack_read_thread`,
   `slack_search_public_and_private`,
   `slack_search_users`, `CronCreate`, `CronList`,
-  and `Bash` (only to delete `cycle_checkpoint.json`).
+  (`Bash` is not permitted — checkpoint cleared via Write tool).
 - **Never** use tools from other MCP servers (email,
   GitHub, etc.) regardless of what is available in the
   session.
