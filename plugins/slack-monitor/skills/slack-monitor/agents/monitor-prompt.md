@@ -105,10 +105,10 @@ min ago"`
 
 - `after_date` — calendar date of `last_scan` in `YYYY-MM-DD` format
   (used in Slack `after:` query modifier)
-- `local_hour` — current hour (0–23) derived from `current_time` in
-  the user's timezone (infer from `workspaceDomain` or use UTC if
-  unknown)
-- `local_dow` — current day-of-week (1=Mon, 7=Sun)
+- `local_hour` — current hour (0–23) derived from `current_time`
+  converted to the `timezone` config field (IANA format, e.g.
+  `America/Los_Angeles`). Fall back to UTC if `timezone` is unset.
+- `local_dow` — current day-of-week (1=Mon, 7=Sun), same timezone.
 
 **Validate:** if `userId` is empty or unset, abort immediately with:
 `GUARDRAIL: userId not configured`

@@ -64,6 +64,7 @@ reviewMode: remote-control
 interval: 15
 activeInterval: 1
 offhoursInterval:
+timezone: America/New_York
 startHour: 7
 endHour: 16
 days: 1-5
@@ -201,8 +202,8 @@ will be routed via remote-control.
    permissions are established).
 
 6. **Schedule next scan** using `CronList` then `CronCreate`:
-   - Compute `local_hour` and `local_dow` from current time and user
-     timezone
+   - Compute `local_hour` and `local_dow` from `current_time` using
+     the `timezone` config field (IANA). Fall back to UTC if unset.
    - Outside working hours (`local_hour >= endHour` or
      `local_hour < startHour` or `local_dow` outside `days`):
      - If `offhoursInterval` is set → recurring cron at that interval

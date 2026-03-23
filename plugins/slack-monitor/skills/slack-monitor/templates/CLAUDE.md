@@ -12,6 +12,7 @@ reviewMode: remote-control
 interval: 15
 activeInterval: 1
 offhoursInterval:
+timezone: America/New_York
 startHour: 7
 endHour: 16
 days: 1-5
@@ -62,6 +63,10 @@ skill.
 
 ### Schedule
 
+- **timezone** — IANA timezone for working-hours
+  detection (e.g. `America/Los_Angeles`, `Europe/London`).
+  Falls back to UTC if unset — set this to get correct
+  off-hours scheduling.
 - **interval** — Minutes between idle scans (default 15)
 - **activeInterval** — Minutes between active scans
   (default 1)

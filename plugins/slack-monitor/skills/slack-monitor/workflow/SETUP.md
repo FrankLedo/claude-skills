@@ -47,6 +47,17 @@ and `people/_template.md` in one command.
 Use `AskUserQuestion` for each field. Show the default
 value and a brief description.
 
+**Detect timezone automatically** before asking any questions:
+
+```bash
+# macOS / Linux with systemd
+readlink /etc/localtime | sed 's|.*/zoneinfo/||'
+```
+
+If that returns a valid IANA name (e.g. `America/Los_Angeles`),
+use it as the default for `timezone`. Otherwise fall back to
+`$(date +%Z)` as a hint, but ask the user to confirm.
+
 **Required (no default — must be provided):**
 
 - `userId` — "What is your Slack user ID? (Find it
@@ -56,6 +67,9 @@ value and a brief description.
 
 **Recommended (have defaults but commonly customized):**
 
+- `timezone` — Pre-fill with the detected IANA timezone.
+  Ask: "Your timezone looks like `<detected>` — is that
+  correct? (IANA format, e.g. `America/New_York`)"
 - `selfDmChannel` — "What is your self-DM channel ID?
   (Leave blank to skip self-DM commands)"
 - `channels` — "Which channels should I watch?
@@ -80,6 +94,7 @@ After the recommended fields, offer:
 Options:
 - `Use defaults` — skip to Step 3
 - `Customize` — continue with:
+  - `timezone` (confirm or change the auto-detected value)
   - `autoReply` / `autoReplyConfidence`
   - `interval` / `activeInterval`
   - `startHour` / `endHour` / `days`
