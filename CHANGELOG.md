@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18](https://github.com/FrankLedo/claude-skills/compare/v0.1.17...v0.1.18) (2026-03-23)
+
+
+### Bug Fixes
+
+* **slack-monitor:** add explicit timezone config field, closes [#34](https://github.com/FrankLedo/claude-skills/issues/34) ([e28b35f](https://github.com/FrankLedo/claude-skills/commit/e28b35f8fed603873e5477db4884de6b1299cc4f))
+* **slack-monitor:** add hook to auto-approve plugin data directory operations ([2bd72ab](https://github.com/FrankLedo/claude-skills/commit/2bd72ab4836b66a37efe2f10324c270b353fa5d4))
+* **slack-monitor:** move checkpoint clear to parent SKILL.md ([57cd411](https://github.com/FrankLedo/claude-skills/commit/57cd411360f04e103bfc86010dfa77b567430c78))
+* **slack-monitor:** replace Bash rm checkpoint with Write {} null marker ([9083178](https://github.com/FrankLedo/claude-skills/commit/90831786d6547a2f23511c49aabbc3f5f8f267de))
+
 ## [0.1.17](https://github.com/FrankLedo/claude-skills/compare/v0.1.16...v0.1.17) (2026-03-22)
 
 
