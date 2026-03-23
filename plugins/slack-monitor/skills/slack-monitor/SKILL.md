@@ -196,6 +196,9 @@ will be routed via remote-control.
 5. Receive the `MONITOR_SUMMARY` block from the agent.
    State writes (`last_scan`, `search_cache.json`) are handled by the
    monitor agent (see `agents/monitor-prompt.md` Step 5).
+   **Write** `{}` to `${CLAUDE_PLUGIN_DATA}/cycle_checkpoint.json`
+   (clears the checkpoint in the parent context where plugin data dir
+   permissions are established).
 
 6. **Schedule next scan** using `CronList` then `CronCreate`:
    - Compute `local_hour` and `local_dow` from current time and user
