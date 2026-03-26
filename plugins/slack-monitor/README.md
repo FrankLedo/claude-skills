@@ -43,14 +43,13 @@ A template with defaults is at `templates/CLAUDE.md`.
 
 | Field                  | Default    | Description                                                          |
 |------------------------|------------|----------------------------------------------------------------------|
-| `selfDmChannel`        | `""`       | Channel ID for your self-DM (enables self-DM commands)               |
 | `channels`             | `""`       | Comma-separated channel IDs to watch                                 |
 | `groups`               | `""`       | Comma-separated subteam IDs for group @mention monitoring            |
 | `autoReply`            | `true`     | Enable automatic replies for high-confidence drafts                  |
 | `autoReplyConfidence`  | `90`       | Minimum confidence score (0-100) to auto-send                        |
 | `draftMode`            | `false`    | When `true`, replies are created as Slack drafts instead of being posted directly. You edit and send the draft in Slack — nothing is posted on your behalf. High-confidence auto-replies also become drafts, with a CLI or DM notification. |
 | `scanOnly`             | `false`    | When `true`, no messages are sent during a scan — everything is queued. Combine with `--allowedTools` for the strongest injection defense. |
-| `reviewMode`           | `"remote-control"` | `"remote-control"` (queue + `/slack-monitor review`), `"direct"` (inline blocking), `"slack"` (legacy self-DM) |
+| `reviewMode`           | `"remote-control"` | `"remote-control"` (queue + `/slack-monitor review`) or `"direct"` (inline blocking) |
 | `interval`             | `15`       | Minutes between scans when idle                                      |
 | `activeInterval`       | `1`        | Minutes between scans when conversations are active                  |
 | `offhoursInterval`     | `null`     | Minutes between off-hours scans (null = no off-hours polling)        |
@@ -71,7 +70,6 @@ documentation below:
 ---
 userId: UXXXXXXXXXX
 workspaceDomain: myteam.slack.com
-selfDmChannel: DXXXXXXXXXX
 channels: CXXXXXXXXXX,CXXXXXXXXXX
 groups: SXXXXXXXXXX
 autoReply: true
@@ -112,11 +110,6 @@ clickable options. The scan blocks until you respond.
 Best for active terminal sessions where you want instant
 control.
 
-### Slack Mode (legacy)
-
-Self-DM review via Slack. Not recommended — Slack does not
-deliver notifications for messages you send to yourself.
-
 ## Secure / Headless Invocation
 
 When running unattended (e.g. via cron or a background
@@ -155,8 +148,6 @@ of tool availability.
   channels
 - **Group mentions** — messages that @mention your
   configured groups
-- **Self-DM commands** — instructions you send to
-  yourself for the skill to execute
 
 ## State Files
 
@@ -233,8 +224,6 @@ workflow/
                       messages are found
   REVIEW.md         — loaded only when presenting
                       drafts for review
-  SELF-DM.md        — loaded only when selfDmChannel
-                      is configured
   DM-REVIEW.md      — loaded only in slack review mode
   FORMATS.md        — loaded only when reading/writing
                       state files
@@ -258,8 +247,6 @@ they're needed.
   "Copy member ID"
 - **Channel ID:** Right-click channel name >
   "View channel details" > scroll to bottom
-- **Self-DM channel:** Open your self-DM, the channel
-  ID is in the URL (`/messages/DXXXXXXXXXX`)
 - **Subteam ID:** Use the Slack API or ask your
   workspace admin
 

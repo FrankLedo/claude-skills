@@ -70,8 +70,6 @@ use it as the default for `timezone`. Otherwise fall back to
 - `timezone` — Pre-fill with the detected IANA timezone.
   Ask: "Your timezone looks like `<detected>` — is that
   correct? (IANA format, e.g. `America/New_York`)"
-- `selfDmChannel` — "What is your self-DM channel ID?
-  (Leave blank to skip self-DM commands)"
 - `channels` — "Which channels should I watch?
   (Comma-separated channel IDs, or blank for none)"
 - `groups` — "Which group @mentions should I monitor?

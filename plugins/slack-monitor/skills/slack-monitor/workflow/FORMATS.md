@@ -51,7 +51,7 @@ Presence of this file indicates an interrupted cycle.
 ```json
 {
   "started_at": "ISO 8601 UTC",
-  "last_step": "init|dm_review|self_dm|search|handle|auth_error",
+  "last_step": "init|dm_review|search|handle|auth_error",
   "processed_ids": ["<message_ts>-<channel_id>", ...]
 }
 ```

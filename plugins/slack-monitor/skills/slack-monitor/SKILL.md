@@ -30,7 +30,6 @@ workflow/          — on-demand workflow details:
   GUARDRAILS.md    — safety limits and rules
   HANDLE.md        — message handling + learning
   REVIEW.md        — review modes + formatting
-  SELF-DM.md       — self-DM command processing
   DM-REVIEW.md     — DM review reply processing
   FORMATS.md       — state file schemas
 templates/         — default files for first run
@@ -53,7 +52,6 @@ the body) at the start of each cycle.
 ---
 userId: UXXXXXXXXXX
 workspaceDomain: myteam.slack.com
-selfDmChannel:
 channels:
 groups:
 autoReply: true
@@ -221,7 +219,6 @@ will be routed via remote-control.
    - `auto_sent`: N
    - `queued`: N this cycle
    - `pending_queue_depth`: N total awaiting review
-   - `self_dm_commands`: N
    - `active`: true|false
    - Next scan scheduled for: `<time>`
    - If `pending_queue_depth` > 0: append

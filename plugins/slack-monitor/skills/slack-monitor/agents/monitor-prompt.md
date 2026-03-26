@@ -40,7 +40,6 @@ config files to re-derive them.
 | `CLAUDE_PLUGIN_DATA` | Absolute path to the persistent state directory |
 | `userId` | Slack user ID (e.g. `UXXXXXXXXXX`) |
 | `workspaceDomain` | Slack workspace domain (e.g. `myteam.slack.com`) |
-| `selfDmChannel` | Channel ID for self-DM commands (may be empty) |
 | `channels` | List of watched channel IDs |
 | `groups` | List of watched subteam IDs |
 | `autoReply` | `true`/`false` — whether auto-reply is enabled |
@@ -124,16 +123,7 @@ If `reviewMode` is `slack`: **Read**
 `$SKILL_SCRIPTS_DIR/workflow/DM-REVIEW.md` and follow the legacy
 DM review process.
 
-### Step 1.7: Process Self-DM Commands
-
-If `selfDmChannel` is set (non-empty), **Read**
-`$SKILL_SCRIPTS_DIR/workflow/SELF-DM.md` and follow the self-DM
-command processing. Track how many commands were processed.
-
-If `selfDmChannel` is empty, skip to Step 2 (count = 0).
-
-Update checkpoint: `"last_step": "dm_review"` after Step 1.5,
-`"last_step": "self_dm"` after Step 1.7.
+Update checkpoint: `"last_step": "dm_review"` after Step 1.5.
 
 ### Step 2: Search Slack
 
@@ -142,10 +132,8 @@ subagents). Run A, B, and D in parallel; C and E only if applicable.
 
 **API error handling:** For every MCP tool call in this step:
 
-- `invalid_auth` or `token_revoked` → abort the entire cycle; if
-  `selfDmChannel` is set, send one alert DM:
-  `"*[Monitor]* ⚠️ Slack auth error — token may be expired. Run /slack-monitor setup."`;
-  then write checkpoint `"last_step": "auth_error"` and stop.
+- `invalid_auth` or `token_revoked` → abort the entire cycle; write
+  checkpoint `"last_step": "auth_error"` and stop.
 - `channel_not_found` or `is_archived` → skip that specific channel,
   log: `"GUARDRAIL: channel <id> not found or archived, skipped"`.
   Continue with remaining searches.
@@ -277,11 +265,9 @@ messages_found: N (DMs: N / mentions: N / threads: N)
 auto_sent: N
 queued: N
 pending_queue_depth: N
-self_dm_commands: N
 active: true|false
 ```
 
 `active: true` if any of the following:
 - `messages_found` > 0
 - `pending_queue_depth` > 0
-- `self_dm_commands` > 0

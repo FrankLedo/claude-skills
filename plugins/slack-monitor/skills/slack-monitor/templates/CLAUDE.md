@@ -1,7 +1,6 @@
 ---
 userId:
 workspaceDomain:
-selfDmChannel:
 channels:
 groups:
 autoReply: true
@@ -41,8 +40,6 @@ skill.
 
 ### Recommended
 
-- **selfDmChannel** — Channel ID for your self-DM.
-  Enables sending yourself commands via Slack.
 - **channels** — Comma-separated channel IDs to watch.
   All messages in these channels are treated as
   actionable.
