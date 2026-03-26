@@ -91,10 +91,17 @@ fresh. **Write** a new checkpoint immediately:
 
 #### 1b. Compute time values
 
-Compute from injected context (no file reads needed):
+Compute from injected context (no file reads needed).
 
-- `current_time_epoch` — `current_time` as Unix epoch seconds
-- `last_scan_epoch` — `last_scan` as Unix epoch seconds
+**IMPORTANT: Do NOT use any shell command (`date`, `node`, etc.) to
+convert timestamps — these apply local timezone offsets and produce
+incorrect results. Both strings end in `Z` (UTC). Compute epoch
+values by pure arithmetic: parse year/month/day/hour/minute/second
+from the string and calculate seconds since 1970-01-01T00:00:00Z
+directly.**
+
+- `current_time_epoch` — `current_time` as Unix epoch seconds (UTC arithmetic only)
+- `last_scan_epoch` — `last_scan` as Unix epoch seconds (UTC arithmetic only)
 
 **Clock drift guard:** If `last_scan_epoch > current_time_epoch`,
 the stored timestamp is in the future — clamp:
