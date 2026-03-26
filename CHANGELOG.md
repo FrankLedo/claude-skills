@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/FrankLedo/claude-skills/compare/v0.1.18...v0.2.0) (2026-03-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* **slack-monitor:** remove self-DM commands feature
+
+### Features
+
+* **slack-monitor:** remove self-DM commands feature ([a51b41e](https://github.com/FrankLedo/claude-skills/commit/a51b41e58739bf89058abcdbe244d97f79b1f621))
+
+
+### Bug Fixes
+
+* **slack-monitor:** compute epoch by UTC arithmetic, not shell date command, closes [#36](https://github.com/FrankLedo/claude-skills/issues/36) ([c344d62](https://github.com/FrankLedo/claude-skills/commit/c344d627ebd44da54db12e28f1aec06e673210bd))
+* **slack-monitor:** replace stale cron on work-hours/off-hours transition, closes [#31](https://github.com/FrankLedo/claude-skills/issues/31) ([8aaf02c](https://github.com/FrankLedo/claude-skills/commit/8aaf02cac2625919ede2c10534f8a76b00c32c7c))
+* **slack-monitor:** use convert-timestamp.js for epoch conversion ([ccef82f](https://github.com/FrankLedo/claude-skills/commit/ccef82f841131a8c2dba6e00e144b9cbe592bd86))
+
 ## [0.1.18](https://github.com/FrankLedo/claude-skills/compare/v0.1.17...v0.1.18) (2026-03-23)
 
 
