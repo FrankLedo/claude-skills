@@ -1,14 +1,19 @@
 #!/bin/bash
-# Auto-approve Bash commands that operate within the slack-monitor plugin data directory.
-# Without this, Claude Code prompts for permission on every file operation in the data
-# directory because it is outside the project working directory.
+# Auto-approve Bash commands that:
+#   1. Operate within the slack-monitor plugin data directory
+#   2. Run Node.js scripts from within the plugin cache directory
+# Without this, Claude Code prompts for permission on every cycle
+# because these paths are outside the project working directory.
 set -euo pipefail
 
 plugin_data="$HOME/.claude/plugins/data/slack-monitor"
+plugin_cache="$HOME/.claude/plugins/cache"
 
 input=$(cat)
 cmd=$(echo "$input" | jq -r '.tool_input.command // ""')
 
 if echo "$cmd" | grep -qF "$plugin_data"; then
   echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"Bash command targets slack-monitor plugin data directory"}}'
+elif echo "$cmd" | grep -qE "^node .+$plugin_cache"; then
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"Node.js script from plugin cache directory"}}'
 fi

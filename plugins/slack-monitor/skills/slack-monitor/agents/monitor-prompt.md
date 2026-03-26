@@ -93,15 +93,19 @@ fresh. **Write** a new checkpoint immediately:
 
 Compute from injected context (no file reads needed).
 
-**IMPORTANT: Do NOT use any shell command (`date`, `node`, etc.) to
-convert timestamps — these apply local timezone offsets and produce
-incorrect results. Both strings end in `Z` (UTC). Compute epoch
-values by pure arithmetic: parse year/month/day/hour/minute/second
-from the string and calculate seconds since 1970-01-01T00:00:00Z
-directly.**
+Run the bundled conversion script for both timestamps (Node.js
+`new Date(isoString)` is timezone-safe for `Z`-suffix strings):
 
-- `current_time_epoch` — `current_time` as Unix epoch seconds (UTC arithmetic only)
-- `last_scan_epoch` — `last_scan` as Unix epoch seconds (UTC arithmetic only)
+```bash
+node "$SKILL_SCRIPTS_DIR/convert-timestamp.js" "<current_time>"
+node "$SKILL_SCRIPTS_DIR/convert-timestamp.js" "<last_scan>"
+```
+
+Each call outputs JSON with `epoch` and `after_date` fields.
+
+- `current_time_epoch` — `epoch` from the `current_time` result
+- `last_scan_epoch` — `epoch` from the `last_scan` result
+- `after_date` — `after_date` from the `last_scan` result (use this for Slack `after:` queries)
 
 **Clock drift guard:** If `last_scan_epoch > current_time_epoch`,
 the stored timestamp is in the future — clamp:
@@ -109,8 +113,6 @@ the stored timestamp is in the future — clamp:
 Log: `"GUARDRAIL: last_scan is in the future, clamped to <interval>
 min ago"`
 
-- `after_date` — calendar date of `last_scan` in `YYYY-MM-DD` format
-  (used in Slack `after:` query modifier)
 - `local_hour` — current hour (0–23) derived from `current_time`
   converted to the `timezone` config field (IANA format, e.g.
   `America/Los_Angeles`). Fall back to UTC if `timezone` is unset.
