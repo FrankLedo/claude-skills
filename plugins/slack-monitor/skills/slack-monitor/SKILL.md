@@ -199,20 +199,23 @@ will be routed via remote-control.
    (clears the checkpoint in the parent context where plugin data dir
    permissions are established).
 
-6. **Schedule next scan** using `CronList` then `CronCreate`:
+6. **Schedule next scan** using `CronList`, `CronDelete`, `CronCreate`:
    - Compute `local_hour` and `local_dow` from `current_time` using
      the `timezone` config field (IANA). Fall back to UTC if unset.
-   - Outside working hours (`local_hour >= endHour` or
-     `local_hour < startHour` or `local_dow` outside `days`):
-     - If `offhoursInterval` is set → recurring cron at that interval
-     - Otherwise → one-shot cron for `startHour:03` on next active day
-   - Within working hours:
-     - If `active: true` in MONITOR_SUMMARY → use `activeInterval`
-       (See `agents/monitor-prompt.md` for the definition of `active`
-       and all MONITOR_SUMMARY fields.)
-     - Otherwise → use `interval`
-   - Use `CronCreate` to schedule the cron (skip if a matching cron
-     already exists per `CronList`).
+   - Determine desired schedule:
+     - Outside working hours (`local_hour >= endHour` or
+       `local_hour < startHour` or `local_dow` outside `days`):
+       - If `offhoursInterval` is set → recurring cron at that interval
+       - Otherwise → one-shot cron for `startHour:03` on next active day
+     - Within working hours:
+       - If `active: true` in MONITOR_SUMMARY → use `activeInterval`
+       - Otherwise → use `interval`
+   - Call `CronList` to find any existing slack-monitor cron.
+   - If an existing cron's schedule **matches** the desired schedule →
+     skip (no change needed).
+   - If an existing cron's schedule **differs** → `CronDelete` it, then
+     `CronCreate` with the correct schedule.
+   - If no cron exists → `CronCreate` with the correct schedule.
 
 7. **Report** to user:
    - `messages_found`: N (DMs: N / mentions: N / threads: N)
