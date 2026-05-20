@@ -71,23 +71,20 @@ agent. The parent SKILL.md handles scheduling after this agent returns.
 
 #### 1a. Checkpoint recovery
 
-**Read** `<CLAUDE_PLUGIN_DATA>/cycle_checkpoint.json`. If it exists:
-- Parse `started_at` and `last_step`. If `started_at` is within the
-  last 30 minutes, this is a resumable interrupted cycle.
-- Load `processed_ids` (array of message IDs already handled).
-- Resume from the step after `last_step`. Skip any message whose `id`
-  appears in `processed_ids`.
-- Log: `"RESUME: continuing interrupted cycle from step <last_step>"`
-
-If the file does not exist (or `started_at` > 30 min ago), start
-fresh. **Write** a new checkpoint immediately:
-```json
-{
-  "started_at": "<current_time>",
-  "last_step": "init",
-  "processed_ids": []
-}
+Run:
+```bash
+node "$SKILL_SCRIPTS_DIR/scripts/state.js" checkpoint-read --data "$CLAUDE_PLUGIN_DATA"
 ```
+Parse the JSON output. If the result is `{}`, or if `started_at` is
+more than 30 minutes before `current_time`, start fresh and run:
+```bash
+node "$SKILL_SCRIPTS_DIR/scripts/state.js" checkpoint-write \
+  '{"started_at":"<current_time>","last_step":"init","processed_ids":[]}' \
+  --data "$CLAUDE_PLUGIN_DATA"
+```
+If `started_at` is within the last 30 minutes, resume from `last_step`
+and skip any message whose `id` appears in `processed_ids`.
+Log: `"RESUME: continuing interrupted cycle from step <last_step>"`
 
 #### 1b. Compute time values
 
@@ -170,8 +167,13 @@ modifier in the query string only, then filter by `message_ts`.
 **Search B** — `"<@<userId>> after:<after_date>"`
 
 **Search C** — `"from:<@<userId>> is:thread after:<after_date>"`
-(check `search_cache.json` before reading threads — skip any thread_ts
-already in the cache)
+Before reading each thread, check the cache:
+```bash
+node "$SKILL_SCRIPTS_DIR/scripts/state.js" cache-get "<thread_ts>-<channel_id>" \
+  --data "$CLAUDE_PLUGIN_DATA"
+```
+If the result is not `null` and `checked_at_epoch >= last_scan_epoch`,
+skip reading this thread.
 
 **Search D** — `slack_read_channel` for each channel in `channels`
 with `oldest: <last_scan_epoch>`, `limit: 20`,
@@ -244,14 +246,12 @@ Otherwise: **Read** `$SKILL_SCRIPTS_DIR/workflow/GUARDRAILS.md` and
 `$SKILL_SCRIPTS_DIR/workflow/HANDLE.md` (in parallel), then process
 each actionable message per the handle workflow.
 
-After processing **each individual message**, append its `id` to
-`processed_ids` in the checkpoint and update `"last_step": "handle"`:
-```json
-{
-  "started_at": "<original>",
-  "last_step": "handle",
-  "processed_ids": ["<id1>", "<id2>", ...]
-}
+After processing **each individual message**, update the checkpoint
+(build the JSON with the accumulated `processed_ids` list):
+```bash
+node "$SKILL_SCRIPTS_DIR/scripts/state.js" checkpoint-write \
+  '{"started_at":"<original_started_at>","last_step":"handle","processed_ids":["<id1>","<id2>"]}' \
+  --data "$CLAUDE_PLUGIN_DATA"
 ```
 This allows resuming mid-batch if interrupted.
 
@@ -261,8 +261,17 @@ Track totals: `auto_sent`, `queued`.
 
 **Write** `current_time` to `<CLAUDE_PLUGIN_DATA>/last_scan`.
 
-If there are new thread reads not previously in the cache, **Write**
-the merged cache to `<CLAUDE_PLUGIN_DATA>/search_cache.json`.
+For each thread newly read this cycle (not previously in the cache),
+run:
+```bash
+node "$SKILL_SCRIPTS_DIR/scripts/state.js" cache-set "<thread_ts>-<channel_id>" \
+  '{"latest_reply_ts":"<ts>","checked_at_epoch":<epoch>}' \
+  --data "$CLAUDE_PLUGIN_DATA"
+```
+After all cache-set calls, prune stale entries:
+```bash
+node "$SKILL_SCRIPTS_DIR/scripts/state.js" cache-prune --data "$CLAUDE_PLUGIN_DATA"
+```
 
 ## Return Value
 
