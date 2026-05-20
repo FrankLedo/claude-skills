@@ -111,7 +111,7 @@ async function fetchJira(itemUrl) {
   const ticketMatch = itemUrl.match(/\/browse\/([A-Z]+-\d+)/i);
   const ticket      = ticketMatch ? ticketMatch[1].toUpperCase() : itemUrl;
   const auth        = Buffer.from(`${jiraEmail}:${jiraToken}`).toString('base64');
-  const url         = `${jiraBaseUrl.replace(/\/$/, '')}/rest/api/3/issue/${ticket}?fields=summary,status,comment,updated`;
+  const url         = `${jiraBaseUrl.replace(/\/$/, '')}/rest/api/3/issue/${ticket}?fields=summary,status,comment,updated,subtasks`;
 
   const res = await fetch(url, {
     headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' },
@@ -121,10 +121,15 @@ async function fetchJira(itemUrl) {
   const fields = data.fields;
 
   return {
-    status:        fields.status?.name  ?? 'Unknown',
-    summary:       fields.summary       ?? '',
+    status:        fields.status?.name   ?? 'Unknown',
+    summary:       fields.summary        ?? '',
     comment_count: fields.comment?.total ?? 0,
-    last_activity: fields.updated       ?? null,
+    last_activity: fields.updated        ?? null,
+    subtasks:      (fields.subtasks ?? []).map(st => ({
+      key:     st.key,
+      summary: st.fields?.summary       ?? '',
+      status:  st.fields?.status?.name  ?? 'Unknown',
+    })),
     last_checked:  now.toISOString(),
   };
 }
@@ -158,8 +163,13 @@ function conditionMet(item, newState, prevState) {
     if (cond.startsWith('status:')) {
       return newState.status.toLowerCase() === cond.slice('status:'.length).toLowerCase();
     }
-    if (cond === 'new-comment') return prevState != null && newState.comment_count > prevState.comment_count;
-    if (cond === 'any')         return prevState != null && JSON.stringify(pick(newState)) !== JSON.stringify(pick(prevState));
+    if (cond === 'new-comment')  return prevState != null && newState.comment_count > prevState.comment_count;
+    if (cond === 'new-subtask') {
+      if (prevState == null) return false;
+      const prevKeys = new Set((prevState.subtasks || []).map(st => st.key));
+      return (newState.subtasks || []).some(st => !prevKeys.has(st.key));
+    }
+    if (cond === 'any') return prevState != null && JSON.stringify(pick(newState)) !== JSON.stringify(pick(prevState));
   }
 
   return false;
@@ -215,7 +225,12 @@ async function main() {
     if (item.state == null) continue;
 
     if (conditionMet(item, newState, item.state)) {
-      changed.push({ url: item.url, condition: item.condition || 'any' });
+      const entry = { url: item.url, condition: item.condition || 'any' };
+      if ((item.condition || 'any') === 'new-subtask') {
+        const prevKeys = new Set((item.state.subtasks || []).map(st => st.key));
+        entry.new_subtasks = (newState.subtasks || []).filter(st => !prevKeys.has(st.key));
+      }
+      changed.push(entry);
     }
   }
 

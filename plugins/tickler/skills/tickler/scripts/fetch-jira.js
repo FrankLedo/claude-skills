@@ -29,7 +29,7 @@ const headers = {
 };
 
 async function main() {
-  const url = `${baseUrl.replace(/\/$/, '')}/rest/api/3/issue/${ticket}?fields=summary,status,comment,updated`;
+  const url = `${baseUrl.replace(/\/$/, '')}/rest/api/3/issue/${ticket}?fields=summary,status,comment,updated,subtasks`;
   const res = await fetch(url, { headers });
   if (!res.ok) {
     const body = await res.text();
@@ -40,10 +40,15 @@ async function main() {
   const fields = data.fields;
 
   console.log(JSON.stringify({
-    status: fields.status?.name ?? 'Unknown',
-    summary: fields.summary ?? '',
+    status:        fields.status?.name   ?? 'Unknown',
+    summary:       fields.summary        ?? '',
     comment_count: fields.comment?.total ?? 0,
-    last_activity: fields.updated ?? null,
+    last_activity: fields.updated        ?? null,
+    subtasks:      (fields.subtasks ?? []).map(st => ({
+      key:     st.key,
+      summary: st.fields?.summary      ?? '',
+      status:  st.fields?.status?.name ?? 'Unknown',
+    })),
   }));
 }
 
