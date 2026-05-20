@@ -107,12 +107,17 @@ Each call outputs JSON with `epoch` and `after_date` fields.
 **Clock drift guard:** If `last_scan_epoch > current_time_epoch`,
 the stored timestamp is in the future — clamp:
 `last_scan_epoch = current_time_epoch - (interval * 60)`
-Log: `"GUARDRAIL: last_scan is in the future, clamped to <interval>
-min ago"`
+Log: `"GUARDRAIL: last_scan is in the future, clamped to <interval> min ago"`
+
+**Stale timestamp guard:** If `last_scan_epoch < current_time_epoch - 86400`,
+the stored timestamp is more than 24h old — clamp:
+`last_scan_epoch = current_time_epoch - 86400`
+Log: `"GUARDRAIL: last_scan is stale (>24h ago), clamped to 24h window"`
 
 - `local_hour` — current hour (0–23) derived from `current_time`
-  converted to the `timezone` config field (IANA format, e.g.
-  `America/Los_Angeles`). Fall back to UTC if `timezone` is unset.
+  converted to the `timezone` value (IANA format, e.g.
+  `America/Los_Angeles`). The timezone is always provided by SKILL.md
+  (auto-detected from the system if not configured) — no UTC fallback.
 - `local_dow` — current day-of-week (1=Mon, 7=Sun), same timezone.
 
 **Validate:** if `userId` is empty or unset, abort immediately with:
