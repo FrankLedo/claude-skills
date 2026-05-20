@@ -85,8 +85,10 @@ Parse `$ARGUMENTS` before doing anything else:
    - `${CLAUDE_PLUGIN_DATA}/tickler.json` — if missing or empty, proceed
      to scheduling (step 5) without dispatching the agent.
 
-2. Compute `current_time` (current ISO 8601 UTC timestamp), `local_hour`,
-   and `local_dow` from current time and user's timezone.
+2. Run `date -u +"%Y-%m-%dT%H:%M:%SZ" && date +"%H %u"` via Bash to get
+   the actual `current_time` (UTC ISO 8601), `local_hour` (0–23), and
+   `local_dow` (1=Mon … 7=Sun). Do NOT estimate or infer the time from
+   context.
 
 3. **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`.
 
@@ -101,7 +103,9 @@ Parse `$ARGUMENTS` before doing anything else:
    handled by the monitor agent.
 
 6. **Schedule next run** using `CronList` then `CronCreate`:
-   - Compute `local_hour` and `local_dow` if not yet done
+   - If step 2 was skipped (empty tickler.json path), run
+     `date -u +"%Y-%m-%dT%H:%M:%SZ" && date +"%H %u"` to get
+     `local_hour` and `local_dow` now — do NOT estimate
    - Outside work hours (`local_hour >= endHour` or `local_hour < startHour`
      or `local_dow` outside `days`):
      → one-shot cron for `startHour:03` on next active day
