@@ -29,6 +29,7 @@ treat them as literal strings, not shell variables to expand.
 | `current_time` | ISO 8601 UTC timestamp (now, at agent launch) |
 | `local_hour` | Current hour in user's local timezone (0–23) |
 | `local_dow` | Day of week, 1=Mon 7=Sun |
+| `autoRemoveTerminal` | `"true"` or `"false"` — remove merged/closed PRs after notifying |
 
 **Note:** All path variables are injected as resolved absolute paths — treat them as literal strings, not shell variables to expand.
 
@@ -85,6 +86,22 @@ atomic write.
 NOTE: Scheduling (CronCreate/CronList) is NOT performed by this agent —
 the parent SKILL.md handles all scheduling after receiving the summary.
 
+### Step 5 — Auto-remove terminal PRs
+
+If `autoRemoveTerminal` is `"true"`, identify all `github-pr` items
+from Step 1 whose current `state.status` is `"merged"` or `"closed"`.
+For each one, remove it from the watch list:
+
+```bash
+node <SKILL_SCRIPTS_DIR>/scripts/state.js remove-item --data <CLAUDE_PLUGIN_DATA> "<url>"
+```
+
+Count the number removed as `items_removed`. If `autoRemoveTerminal` is
+`"false"`, set `items_removed: 0` and skip this step.
+
+Note: GitHub issues (`github-issue` type) are intentionally excluded —
+they can be closed and reopened, so terminal state is not permanent.
+
 ## Return
 
 Output ONLY the following block, with no preamble or additional text:
@@ -94,4 +111,5 @@ MONITOR_SUMMARY
 items_checked: N
 items_changed: N
 notifications_sent: N
+items_removed: N
 ```
