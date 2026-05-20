@@ -9,9 +9,10 @@ argument-hint: "[setup | review | (no args to scan)]"
 
 Scans Slack for messages that need your attention since
 the last scan, drafts replies, and asks your approval
-before sending anything. This skill has **no scripts or
-dependencies** — it uses only Claude's native
-Read/Write/Edit tools and MCP integrations.
+before sending anything. State file I/O uses
+`scripts/state.js` (Node.js built-ins only) for atomic
+reads and writes; Slack communication uses MCP
+integrations.
 
 ## Skill Directory
 
@@ -137,8 +138,13 @@ contains a `Base directory for this skill: ... remote-control ...`
 header. If yes, note it in the output so the user knows responses
 will be routed via remote-control.
 
-1. **Read** `${CLAUDE_PLUGIN_DATA}/pending_review.json`.
-   If empty or missing, report "No pending items." and stop.
+1. Run:
+   ```bash
+   node "$SKILL_SCRIPTS_DIR/scripts/state.js" pending-list \
+     --data "$CLAUDE_PLUGIN_DATA"
+   ```
+   Parse the JSON output. If the array is empty, report
+   "No pending items." and stop.
 
 2. **Read** `$SKILL_SCRIPTS_DIR/workflow/REVIEW.md` for formatting rules.
 
@@ -168,7 +174,12 @@ will be routed via remote-control.
       - `custom — Type a custom reply`
 
    c. Execute the choice (per REVIEW.md formatting/threading rules).
-      Remove the item from the queue. Append to `saved_messages.md`.
+      Remove the item from the queue:
+      ```bash
+      node "$SKILL_SCRIPTS_DIR/scripts/state.js" pending-remove "<item.id>" \
+        --data "$CLAUDE_PLUGIN_DATA"
+      ```
+      Append to `saved_messages.md`.
 
 4. After all items, report: N sent, N skipped, queue now empty.
 
@@ -184,8 +195,8 @@ will be routed via remote-control.
 
 3. **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`.
 
-4. **Dispatch Agent** with the monitor prompt. Pass the following as
-   part of the prompt text:
+4. **Dispatch Agent** with `model: haiku` and the monitor prompt.
+   Pass the following as part of the prompt text:
    - `SKILL_SCRIPTS_DIR=<resolved path>`
    - `CLAUDE_PLUGIN_DATA=<resolved path>`
    - All config values from CLAUDE.md frontmatter
@@ -195,9 +206,13 @@ will be routed via remote-control.
 5. Receive the `MONITOR_SUMMARY` block from the agent.
    State writes (`last_scan`, `search_cache.json`) are handled by the
    monitor agent (see `agents/monitor-prompt.md` Step 5).
-   **Write** `{}` to `${CLAUDE_PLUGIN_DATA}/cycle_checkpoint.json`
-   (clears the checkpoint in the parent context where plugin data dir
-   permissions are established).
+   Run:
+   ```bash
+   node "$SKILL_SCRIPTS_DIR/scripts/state.js" checkpoint-clear \
+     --data "$CLAUDE_PLUGIN_DATA"
+   ```
+   (Clears the checkpoint in the parent context where plugin data dir
+   permissions are established.)
 
 6. **Schedule next scan** using `CronList`, `CronDelete`, `CronCreate`:
    - Compute `local_hour` and `local_dow` from `current_time` using
