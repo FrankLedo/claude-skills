@@ -51,15 +51,52 @@ and deliver notifications per the instructions there.
 
 If `changed[]` is empty, skip this step entirely.
 
-### Step 3 — Save State
+### Step 3 — Execute Actions
 
-Write all updated states back — one atomic call:
+For each entry in `changed[]` that has a `pending_actions` array, process
+each action:
+
+**Tier-1 actions** (`merge`, `close`, `comment`, `jira_transition`,
+`remove_from_watch`) — split by `confirm` flag:
+
+- `confirm: false` (or absent) → execute immediately via `actions.js`:
+  ```bash
+  node <SKILL_SCRIPTS_DIR>/scripts/actions.js \
+    --do <verb> --url <item-url> --data <CLAUDE_PLUGIN_DATA> \
+    [--method <merge.args.method>] [--body <comment.args.body>] \
+    [--to <jira_transition.args.to>] \
+    [--jira-base-url <jiraBaseUrl>] [--jira-email <jiraEmail>] [--jira-token <jiraToken>]
+  ```
+  On success, record the key `<on>:<do>` in `updated_states[url].fired_actions[]`
+  so it does not re-fire next cycle.
+
+- `confirm: true` → do NOT execute. Write to
+  `<CLAUDE_PLUGIN_DATA>/pending_actions.json` (append or create):
+  ```json
+  [{ "url": "...", "label": "...", "do": "...", "on": "...", "args": {} }]
+  ```
+
+**Tier-2 actions** (`run`, `slack_dm`) — always execute immediately
+(these are never subject to confirm, as they are themselves agentic):
+
+- `run`: dispatch an **Agent** with `args.cmd` (a slash command or prompt
+  string) as the prompt, plus the item URL as context.
+- `slack_dm`: use the Slack MCP `slack_send_message` tool to DM
+  `slackUserId` with `args.body`.
+
+Track totals: `actions_fired` (executed this cycle),
+`actions_pending_confirm` (written to pending_actions.json).
+
+### Step 4 — Save State
+
+Write all updated states back — one atomic call. Include any `fired_actions`
+additions from Step 3:
 
 ```bash
 node <SKILL_SCRIPTS_DIR>/scripts/state.js set-states --data <CLAUDE_PLUGIN_DATA> '<updated_states_as_json_string>'
 ```
 
-### Step 4 — Auto-remove terminal PRs
+### Step 5 — Auto-remove terminal PRs
 
 If `autoRemoveTerminal` is `"true"`, remove each URL in `terminal_prs[]`:
 
@@ -83,5 +120,7 @@ items_checked: N
 items_changed: N
 notifications_sent: N
 items_removed: N
+actions_fired: N
+actions_pending_confirm: N
 changed_urls: <comma-separated URLs from changed[], or empty>
 ```

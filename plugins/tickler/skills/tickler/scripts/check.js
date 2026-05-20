@@ -194,6 +194,10 @@ async function checkItem(item) {
     } else {
       throw new Error(`Unknown type: ${item.type}`);
     }
+    // Carry fired_actions forward so they survive the state update
+    if (item.state?.fired_actions?.length) {
+      newState.fired_actions = item.state.fired_actions;
+    }
     return { item, newState, error: null };
   } catch (err) {
     return { item, newState: null, error: err.message };
@@ -225,11 +229,21 @@ async function main() {
     if (item.state == null) continue;
 
     if (conditionMet(item, newState, item.state)) {
-      const entry = { url: item.url, condition: item.condition || 'any' };
-      if ((item.condition || 'any') === 'new-subtask') {
+      const triggeredCond = item.condition || 'any';
+      const entry = { url: item.url, condition: triggeredCond };
+
+      if (triggeredCond === 'new-subtask') {
         const prevKeys = new Set((item.state.subtasks || []).map(st => st.key));
         entry.new_subtasks = (newState.subtasks || []).filter(st => !prevKeys.has(st.key));
       }
+
+      // Attach matching actions, filtered for idempotency
+      const firedKeys = new Set(item.state?.fired_actions || []);
+      const pending = (item.actions || []).filter(a =>
+        a.on === triggeredCond && !firedKeys.has(`${a.on}:${a.do}`)
+      );
+      if (pending.length) entry.pending_actions = pending;
+
       changed.push(entry);
     }
   }
