@@ -30,12 +30,13 @@ agents/
 workflow/
   SETUP.md       — first-run setup wizard
   ADD.md         — add / remove / list items
-  CHECK.md       — fetch state and detect changes (used by monitor agent)
   NOTIFY.md      — notification logic (direct / Slack)
   FORMATS.md     — tickler.json and state.json schemas
 scripts/
-  fetch-github.js — GitHub REST API fetcher
-  fetch-jira.js   — Jira REST API fetcher
+  check.js        — fetch state + detect changes for all items (deterministic)
+  fetch-github.js — GitHub REST API fetcher (used by check.js)
+  fetch-jira.js   — Jira REST API fetcher (used by check.js)
+  state.js        — tickler.json read/write API
 ```
 
 **Token optimization:** Only SKILL.md loads every cycle. All
