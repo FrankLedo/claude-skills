@@ -69,8 +69,17 @@ not auto-sent:
 a. Build the pending review queue item (see FORMATS.md).
    Leave `dm_ts` and `dm_channel_id` as `null`.
 
-b. **Read** the current `pending_review.json`, append
-   the item, **Write** back. Log as "queued".
+b. Build the complete queue item JSON (per FORMATS.md). Because
+   message text may contain shell-special characters, write the
+   item to a temp file first, then add it atomically:
+   ```bash
+   # Write item JSON to a temp file (use the Write tool)
+   # File path: /tmp/slack_monitor_pending_item.json
+   node "$SKILL_SCRIPTS_DIR/scripts/state.js" pending-add \
+     --file /tmp/slack_monitor_pending_item.json \
+     --data "$CLAUDE_PLUGIN_DATA"
+   ```
+   Log as "queued".
 
 c. Do NOT send any DM or use `AskUserQuestion`.
    The monitor cycle ends without waiting.
