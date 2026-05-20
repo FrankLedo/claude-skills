@@ -259,7 +259,7 @@ Track totals: `auto_sent`, `queued`.
 
 ### Step 5: Update Timestamp
 
-**Write** `current_time` to `<CLAUDE_PLUGIN_DATA>/last_scan`.
+**Write** `current_time` to `<CLAUDE_PLUGIN_DATA>/last_scan` (plain text file — direct write, no script needed).
 
 For each thread newly read this cycle (not previously in the cache),
 run:
