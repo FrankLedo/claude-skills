@@ -56,9 +56,7 @@ switch (cmd) {
   case 'pending-add': {
     const jsonStr = filePath
       ? fs.readFileSync(filePath, 'utf8')
-      : pos.filter((_, i) => {
-          return true;
-        })[0];
+      : pos[0];
     if (!jsonStr) die('pending-add requires <json> or --file <path>');
     const item = JSON.parse(jsonStr);
     if (!item.id) die('pending-add: item must have an id field');
@@ -78,6 +76,7 @@ switch (cmd) {
     if (!id) die('pending-remove requires <id>');
     const items = readJSON(pendingPath, []);
     const kept  = items.filter(i => i.id !== id);
+    if (kept.length === items.length) die(`Not found: ${id}`);
     writeAtomic(pendingPath, kept);
     console.log(`Removed: ${id}`);
     break;
