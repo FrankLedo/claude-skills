@@ -36,27 +36,33 @@ treat them as literal strings, not shell variables to expand.
 
 ### Step 1 — Initialize
 
-In parallel:
-1. **Read** `<CLAUDE_PLUGIN_DATA>/tickler.json`. If missing or empty array,
-   skip to Return with empty summary (`items_checked: 0`, `items_changed: 0`,
-   `notifications_sent: 0`).
-2. **Read** `<CLAUDE_PLUGIN_DATA>/state.json`. If missing, treat as empty
-   object `{}`.
+Load all items (including their last observed state) via the state API:
+
+```bash
+node <SKILL_SCRIPTS_DIR>/scripts/state.js list --data <CLAUDE_PLUGIN_DATA>
+```
+
+This returns the full `tickler.json` array. Each item has a `state` field
+(may be `null` for newly added items). If the result is an empty array,
+skip to Return with empty summary (`items_checked: 0`, `items_changed: 0`,
+`notifications_sent: 0`).
+
+Do NOT use the Read tool for tickler.json or state.json — all I/O goes
+through the state API script.
 
 ### Step 2 — Check Items
 
 **Read** `<SKILL_SCRIPTS_DIR>/workflow/CHECK.md`.
 
 Delegate all fetches to a **haiku-model Agent subagent**. Pass it:
-- The full tickler.json item list
-- The current state.json
+- The full item list (from Step 1, each item includes its `state` field)
 - The config values (githubToken, jiraBaseUrl, jiraEmail, jiraToken)
 - The scripts path: `<SKILL_SCRIPTS_DIR>/scripts/`
 
 Skip items where `snoozed_until` is in the future (compare against
-`current_time`). The subagent runs all API calls in parallel and returns
-`changed[]` (items whose condition is met or that have new activity) and
-`updated_state` (new state for all items).
+`current_time`). The subagent runs all API calls in parallel and returns:
+- `changed[]` — items whose condition is met or that have new activity
+- `updated_states` — `{url: stateObject}` map for all checked items
 
 ### Step 3 — Notify
 
@@ -67,8 +73,14 @@ If nothing changed, skip this step entirely.
 
 ### Step 4 — Save State
 
-**Write** updated `<CLAUDE_PLUGIN_DATA>/state.json` with `updated_state`
-from the subagent.
+Write all updated states back via the state API — one atomic call:
+
+```bash
+node <SKILL_SCRIPTS_DIR>/scripts/state.js set-states --data <CLAUDE_PLUGIN_DATA> '<updated_states_as_json_string>'
+```
+
+Do NOT use the Write tool for tickler.json — the script handles the
+atomic write.
 
 NOTE: Scheduling (CronCreate/CronList) is NOT performed by this agent —
 the parent SKILL.md handles all scheduling after receiving the summary.

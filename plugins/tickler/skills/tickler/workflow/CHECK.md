@@ -5,17 +5,19 @@ Read during Step 2 of the check cycle.
 ## Haiku subagent instructions
 
 Spawn a haiku-model Agent. Pass it:
-- The full tickler.json item list
-- The current state.json
+- The full item list (each item includes a `state` field with last observed
+  state, or `null` if never checked)
 - The config (githubToken, jiraBaseUrl, jiraEmail, jiraToken)
 - The path to scripts: `$SKILL_SCRIPTS_DIR/scripts/`
 
 The subagent must:
 1. For each non-snoozed item, fetch current state using the
-   appropriate script (see below)
-2. Compare fetched state against state.json entry
-3. Return: `changed[]` (items whose condition is met or that have
-   new activity) and `updated_state` (new state for all items)
+   appropriate method (see below)
+2. Compare fetched state against `item.state` (null → treat as first check,
+   no change detection, just establish baseline)
+3. Return:
+   - `changed[]` — items whose condition is met or that have new activity
+   - `updated_states` — `{url: stateObject}` map for all checked items
 
 ## GitHub PR — fetch
 
@@ -52,7 +54,8 @@ Normalise output to this shape regardless of method used:
   "changes_requested": false,
   "merged": false,
   "comment_count": 5,
-  "last_activity": "ISO8601"
+  "last_activity": "ISO8601",
+  "last_checked": "ISO8601"
 }
 ```
 
@@ -61,8 +64,8 @@ Normalise output to this shape regardless of method used:
 - `merged`: `merged === true`
 - `closed`: `status === "closed"` and `merged === false`
 - `changes-requested`: `changes_requested === true`
-- `new-comment`: `comment_count > state.comment_count`
-- `any`: any field differs from stored state
+- `new-comment`: `comment_count > item.state.comment_count`
+- `any`: any field differs from `item.state`
 
 ## GitHub Issue — fetch
 
@@ -92,15 +95,16 @@ Normalise output:
   "title": "...",
   "labels": ["bug", "p1"],
   "comment_count": 3,
-  "last_activity": "ISO8601"
+  "last_activity": "ISO8601",
+  "last_checked": "ISO8601"
 }
 ```
 
 **Condition matching for github-issue:**
 - `closed`: `status === "closed"`
-- `new-comment`: `comment_count > state.comment_count`
+- `new-comment`: `comment_count > item.state.comment_count`
 - `labeled:<label>`: label appears in `labels[]` and was not there before
-- `any`: any field differs
+- `any`: any field differs from `item.state`
 
 ## Jira — fetch
 
@@ -126,19 +130,25 @@ Normalise output:
   "status": "In Progress",
   "summary": "...",
   "comment_count": 4,
-  "last_activity": "ISO8601"
+  "last_activity": "ISO8601",
+  "last_checked": "ISO8601"
 }
 ```
 
 **Condition matching for jira:**
 - `status:<value>`: `status === value` (case-insensitive)
-- `new-comment`: `comment_count > state.comment_count`
-- `any`: any field differs
+- `new-comment`: `comment_count > item.state.comment_count`
+- `any`: any field differs from `item.state`
 
 ## Gotchas
 
-- On network error or non-200 response, log the error but do NOT
-  remove the item from the watch list. Skip it this cycle.
+- Always set `last_checked` to the current ISO 8601 UTC timestamp in the
+  returned state object.
+- If `item.state` is `null` (new item), establish baseline state but do NOT
+  count it as changed — the user added it to watch, not to be notified of
+  its current status.
+- On network error or non-200 response, log the error but do NOT include
+  the item in `changed[]` and do NOT update its state. Skip it this cycle.
 - GitHub merged PRs: the REST API returns `state: "closed"` for both
   closed-without-merge and merged. Check `pull_request.merged`
   (or `merged_at`) separately.
