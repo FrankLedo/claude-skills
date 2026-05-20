@@ -53,6 +53,7 @@ which is auto-loaded as context. Key fields:
 - `days`: working days range e.g. `1-5` (Mon=1 Sun=7, default `1-5`)
 - `interval`: check interval in minutes (default `15`)
 - `autoRemoveTerminal`: auto-remove merged/closed GitHub PRs from watch list after notifying (default `true`)
+- `openInBrowser`: open each changed item URL in the browser after a check cycle (default `false`; macOS only)
 - `githubToken`: optional for public repos; required for private
 - `jiraBaseUrl`: e.g. `https://myorg.atlassian.net`
 - `jiraEmail` + `jiraToken`: Jira API credentials
@@ -100,8 +101,17 @@ Parse `$ARGUMENTS` before doing anything else:
    - `current_time=<ISO 8601 UTC timestamp>`
    - `local_hour=<N>`, `local_dow=<N>`
 
-5. Receive `MONITOR_SUMMARY` from the agent. State writes (state.json) are
-   handled by the monitor agent.
+5. Receive `MONITOR_SUMMARY` from the agent. Parse `items_checked`,
+   `items_changed`, `notifications_sent`, `items_removed`, and `changed_urls`
+   from it. State writes are handled by the monitor agent.
+
+5a. If `openInBrowser: true` in config and `changed_urls` is non-empty,
+    open each URL in the browser — one separate Bash call per URL:
+    ```
+    open "<url1>"
+    open "<url2>"
+    ```
+    (Multi-arg `open` causes blank pages on macOS; one call per URL is required.)
 
 6. **Schedule next run** using `CronList` then `CronCreate`:
    - If step 2 was skipped (empty tickler.json path), run
