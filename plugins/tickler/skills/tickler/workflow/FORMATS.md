@@ -1,6 +1,6 @@
-# Tickler — State File Formats
+# Tickler — State File Format
 
-Reference for all files stored in `${CLAUDE_PLUGIN_DATA}/`.
+Reference for the single state file stored in `${CLAUDE_PLUGIN_DATA}/`.
 
 ## `CLAUDE.md`
 
@@ -29,8 +29,9 @@ full format and examples.
 
 ## `tickler.json`
 
-Array of watched items. The `id` field is a UUID string.
-`snoozed_until` is ISO 8601 or null.
+Single file containing both the watch list and each item's last observed
+state. All reads and writes go through `scripts/state.js` — do not use
+Read/Write tools on this file directly.
 
 ```json
 [
@@ -41,27 +42,20 @@ Array of watched items. The `id` field is a UUID string.
     "condition": "approved",
     "label": "optional human label",
     "added": "2026-03-18T12:00:00Z",
-    "snoozed_until": null
+    "snoozed_until": null,
+    "state": {
+      "status": "open",
+      "title": "Fix the thing",
+      "approvals": 1,
+      "changes_requested": false,
+      "merged": false,
+      "comment_count": 4,
+      "last_activity": "2026-03-17T10:00:00Z",
+      "last_checked": "2026-03-18T09:00:00Z"
+    }
   }
 ]
 ```
 
-## `state.json`
-
-Keyed by URL/ticket-id. Each value is the last fetched state for
-that item. Fields vary by type (see CHECK.md for schemas).
-
-```json
-{
-  "https://github.com/org/repo/pull/123": {
-    "status": "open",
-    "title": "Fix the thing",
-    "approvals": 1,
-    "changes_requested": false,
-    "merged": false,
-    "comment_count": 4,
-    "last_activity": "2026-03-17T10:00:00Z",
-    "last_checked": "2026-03-18T09:00:00Z"
-  }
-}
-```
+`state` is `null` for newly added items that have not yet been checked.
+`state` fields vary by item type (see CHECK.md for per-type schemas).

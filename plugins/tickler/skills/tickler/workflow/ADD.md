@@ -1,5 +1,8 @@
 # Tickler — Add / Remove / List
 
+All reads and writes go through `scripts/state.js`. Do not use Read/Write
+tools on tickler.json directly.
+
 ## Adding an item
 
 Parse the argument: `add <url-or-id> [condition]`
@@ -21,38 +24,64 @@ Parse the argument: `add <url-or-id> [condition]`
 
 ### Steps
 
-1. **Read** `${CLAUDE_PLUGIN_DATA}/tickler.json`
-2. Check for duplicate — if URL already exists, tell the user and
-   offer to update the condition
-3. Fetch current state immediately (run a single check for this item)
-   so state.json has a baseline — avoids false-positive on first check
-4. Append new item to tickler.json with a generated UUID
-5. **Write** updated tickler.json
-6. **Write** updated state.json with the baseline state
-7. Confirm to user: "Watching [url] for [condition]."
+1. Load current items to check for duplicates:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/state.js list --data $CLAUDE_PLUGIN_DATA
+   ```
+   If the URL already exists, tell the user and offer to update the condition.
+
+2. Fetch current state immediately (run a single check for this item using
+   the methods in CHECK.md) to establish a baseline — avoids a
+   false-positive on first monitor cycle.
+
+3. Add the item and its baseline state atomically:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/state.js add-item \
+     --data $CLAUDE_PLUGIN_DATA \
+     '<item-json>' \
+     '<baseline-state-json>'
+   ```
+   The script auto-fills `id` (UUID v4), `added` (ISO 8601), and
+   `snoozed_until: null`. It exits 1 if the URL already exists.
+
+4. Confirm to user: "Watching [url] for [condition]."
 
 ## Removing an item
 
 Parse: `remove <url-or-id>`
 
-1. **Read** `${CLAUDE_PLUGIN_DATA}/tickler.json`
-2. Find item by URL match (partial match ok, confirm if ambiguous)
-3. Remove it; **Write** updated tickler.json
-4. Confirm: "No longer watching [url]."
+1. Load current items to find the target:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/state.js list --data $CLAUDE_PLUGIN_DATA
+   ```
+   Match by URL (partial match ok; confirm if ambiguous).
+
+2. Remove item and its embedded state atomically:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/state.js remove-item \
+     --data $CLAUDE_PLUGIN_DATA \
+     '<url>'
+   ```
+
+3. Confirm: "No longer watching [url]."
 
 ## Listing items
 
-1. **Read** `${CLAUDE_PLUGIN_DATA}/tickler.json`
-2. **Read** `${CLAUDE_PLUGIN_DATA}/state.json`
-3. For each item, show:
+1. Load all items:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/state.js list --data $CLAUDE_PLUGIN_DATA
+   ```
+
+2. For each item, show:
    - URL / label
    - Condition
-   - Current status (from state.json)
-   - Last checked time
+   - Current status (from `item.state.status`)
+   - Last checked time (`item.state.last_checked`)
    - Snoozed until (if set)
 
 ## Gotchas
 
-- UUIDs: generate with `crypto.randomUUID()` via a Bash one-liner:
-  `node -e "console.log(crypto.randomUUID())"` or use a timestamp-
-  based fallback: `Date.now().toString(36)`.
+- `add-item` exits 1 if the URL is already in tickler.json — check first.
+- `remove-item` exits 1 if the URL is not found — confirm URL with user.
+- Do NOT generate UUIDs or timestamps manually — the script handles that.
+- Do NOT use Read/Write tools on tickler.json directly.
