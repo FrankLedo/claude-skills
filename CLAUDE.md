@@ -63,8 +63,8 @@ MCP dependencies: `slack_search_public_and_private`, `slack_read_thread`, `slack
 ## Design Principles (for adding/modifying plugins)
 
 1. **No npm packages or build steps** — use Claude's native Read/Write/Edit/Bash tools and MCP integrations; `scripts/` Node.js helpers are acceptable if they use only built-in modules and are invoked via `Bash`
-2. **Token efficiency** — load files on-demand via `Read` tool; minimize what's always loaded
-3. **Delegate mechanical work to subagents** — use `haiku` model for expensive search/filter operations
+2. **Minimize token usage** — this is the primary design goal. Load workflow files on-demand via `Read` only when needed; keep SKILL.md lean; avoid passing large data payloads to agents
+3. **Node.js scripts for deterministic logic** — if the logic has predictable inputs and outputs (filtering, batching, state comparison, condition matching, data transformation), put it in `scripts/` not in a model prompt. Reserve model intelligence for judgment calls, natural language interpretation, and tasks that genuinely require reasoning
 4. **State in `${CLAUDE_PLUGIN_DATA}/`** — never hardcode paths like `~/.plugin-name/`
 5. **Scheduling lives in SKILL.md, not the agent** — after a monitor agent returns, SKILL.md handles CronCreate/CronList. Scheduling logic is intentionally duplicated across plugins (not shared) because each plugin is independently installable with no guaranteed shared file path.
 6. **MCP-first for external APIs** — prefer MCP tools when available (no Bash permission needed), fall back to `gh` CLI (already permitted for GitHub), then Node.js scripts as last resort
