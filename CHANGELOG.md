@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://github.com/FrankLedo/claude-skills/compare/v0.2.0...v0.3.0) (2026-05-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* **tickler:** merge tickler.json + state.json into single file, add state API script ([#49](https://github.com/FrankLedo/claude-skills/issues/49))
+
+### Features
+
+* **slack-monitor:** add state.js script + dispatch monitor agent with haiku model ([#57](https://github.com/FrankLedo/claude-skills/issues/57)) ([096173c](https://github.com/FrankLedo/claude-skills/commit/096173c2f5db3de60086f517058d89e51e407652))
+* **tickler:** add new-subtask condition for Jira items ([#56](https://github.com/FrankLedo/claude-skills/issues/56)) ([9c6423f](https://github.com/FrankLedo/claude-skills/commit/9c6423fd1d3e628bac401075c6c90d76af84064e))
+* **tickler:** auto-remove merged/closed PRs from watch list ([#52](https://github.com/FrankLedo/claude-skills/issues/52)) ([904b17e](https://github.com/FrankLedo/claude-skills/commit/904b17e18701db8eb644d975c1dfc88b5bebb2f6))
+* **tickler:** merge tickler.json + state.json into single file, add state API script ([#49](https://github.com/FrankLedo/claude-skills/issues/49)) ([1eef439](https://github.com/FrankLedo/claude-skills/commit/1eef4394ddd48b312db61c3f1f00dc053081c1c2))
+* **tickler:** per-item action hooks fire when watched conditions trigger ([#58](https://github.com/FrankLedo/claude-skills/issues/58)) ([095515e](https://github.com/FrankLedo/claude-skills/commit/095515e7faf33d54e0fadb6fe86a447fd61d3e50))
+* **tickler:** surface changed_urls in MONITOR_SUMMARY and add openInBrowser option ([#53](https://github.com/FrankLedo/claude-skills/issues/53)) ([9eb82da](https://github.com/FrankLedo/claude-skills/commit/9eb82da08fe03bf135f1fb0d33ec5b3834de3cc0))
+
+
+### Bug Fixes
+
+* **tickler:** replace haiku check agent with deterministic Node.js script ([#55](https://github.com/FrankLedo/claude-skills/issues/55)) ([a93f6a7](https://github.com/FrankLedo/claude-skills/commit/a93f6a7e0c5a4a814373c30333ca037981959aff))
+* **tickler:** reschedule cron when run fires significantly late ([#54](https://github.com/FrankLedo/claude-skills/issues/54)) ([e6e6db2](https://github.com/FrankLedo/claude-skills/commit/e6e6db277ab2860666530f8948243e60b98d3a00))
+* **tickler:** run date command for current_time instead of inferring it ([#51](https://github.com/FrankLedo/claude-skills/issues/51)) ([1a0fc1c](https://github.com/FrankLedo/claude-skills/commit/1a0fc1c8ed0600cefd15f5b49a2b8e0489e54fc2))
+
 ## [0.2.0](https://github.com/FrankLedo/claude-skills/compare/v0.1.18...v0.2.0) (2026-03-26)
 
 
