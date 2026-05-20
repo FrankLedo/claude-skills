@@ -18,89 +18,60 @@ treat them as literal strings, not shell variables to expand.
 | `CLAUDE_PLUGIN_DATA` | Absolute path to the persistent state directory |
 | `notify` | `"direct"` or `"slack"` |
 | `slackUserId` | Slack user ID (required if notify is "slack") |
-| `startHour` | Work hours start, 0–23, user's local time |
-| `endHour` | Work hours end, 0–23, user's local time |
-| `days` | Working days range (e.g. `1-5`, Mon=1 Sun=7) |
-| `interval` | Check interval in minutes |
 | `githubToken` | GitHub API token (may be empty) |
 | `jiraBaseUrl` | Jira base URL (may be empty) |
 | `jiraEmail` | Jira email (may be empty) |
 | `jiraToken` | Jira API token (may be empty) |
 | `current_time` | ISO 8601 UTC timestamp (now, at agent launch) |
-| `local_hour` | Current hour in user's local timezone (0–23) |
-| `local_dow` | Day of week, 1=Mon 7=Sun |
 | `autoRemoveTerminal` | `"true"` or `"false"` — remove merged/closed PRs after notifying |
 
 **Note:** All path variables are injected as resolved absolute paths — treat them as literal strings, not shell variables to expand.
 
 ## Steps
 
-### Step 1 — Initialize
-
-Load all items (including their last observed state) via the state API:
+### Step 1 — Check Items
 
 ```bash
-node <SKILL_SCRIPTS_DIR>/scripts/state.js list --data <CLAUDE_PLUGIN_DATA>
+node <SKILL_SCRIPTS_DIR>/scripts/check.js \
+  --data <CLAUDE_PLUGIN_DATA> \
+  --token <githubToken> \
+  --jira-base-url <jiraBaseUrl> \
+  --jira-email <jiraEmail> \
+  --jira-token <jiraToken>
 ```
 
-This returns the full `tickler.json` array. Each item has a `state` field
-(may be `null` for newly added items). If the result is an empty array,
-skip to Return with empty summary (`items_checked: 0`, `items_changed: 0`,
-`notifications_sent: 0`).
+Parse the JSON output fields: `items_checked`, `changed[]`, `updated_states`,
+`terminal_prs[]`. If `items_checked` is 0 (empty watch list), skip to Return
+with zeroed summary.
 
-Do NOT use the Read tool for tickler.json or state.json — all I/O goes
-through the state API script.
+### Step 2 — Notify
 
-### Step 2 — Check Items
+If `changed[]` is non-empty, **Read** `<SKILL_SCRIPTS_DIR>/workflow/NOTIFY.md`
+and deliver notifications per the instructions there.
 
-**Read** `<SKILL_SCRIPTS_DIR>/workflow/CHECK.md`.
+If `changed[]` is empty, skip this step entirely.
 
-Delegate all fetches to a **haiku-model Agent subagent**. Pass it:
-- The full item list (from Step 1, each item includes its `state` field)
-- The config values (githubToken, jiraBaseUrl, jiraEmail, jiraToken)
-- The scripts path: `<SKILL_SCRIPTS_DIR>/scripts/`
+### Step 3 — Save State
 
-Skip items where `snoozed_until` is in the future (compare against
-`current_time`). The subagent runs all API calls in parallel and returns:
-- `changed[]` — items whose condition is met or that have new activity
-- `updated_states` — `{url: stateObject}` map for all checked items
-
-### Step 3 — Notify
-
-If any items changed, **Read** `<SKILL_SCRIPTS_DIR>/workflow/NOTIFY.md` and
-deliver notifications per the instructions there.
-
-If nothing changed, skip this step entirely.
-
-### Step 4 — Save State
-
-Write all updated states back via the state API — one atomic call:
+Write all updated states back — one atomic call:
 
 ```bash
 node <SKILL_SCRIPTS_DIR>/scripts/state.js set-states --data <CLAUDE_PLUGIN_DATA> '<updated_states_as_json_string>'
 ```
 
-Do NOT use the Write tool for tickler.json — the script handles the
-atomic write.
+### Step 4 — Auto-remove terminal PRs
 
-NOTE: Scheduling (CronCreate/CronList) is NOT performed by this agent —
-the parent SKILL.md handles all scheduling after receiving the summary.
-
-### Step 5 — Auto-remove terminal PRs
-
-If `autoRemoveTerminal` is `"true"`, identify all `github-pr` items
-from Step 1 whose current `state.status` is `"merged"` or `"closed"`.
-For each one, remove it from the watch list:
+If `autoRemoveTerminal` is `"true"`, remove each URL in `terminal_prs[]`:
 
 ```bash
 node <SKILL_SCRIPTS_DIR>/scripts/state.js remove-item --data <CLAUDE_PLUGIN_DATA> "<url>"
 ```
 
-Count the number removed as `items_removed`. If `autoRemoveTerminal` is
-`"false"`, set `items_removed: 0` and skip this step.
+Set `items_removed` to the count removed. If `autoRemoveTerminal` is `"false"`
+or `terminal_prs[]` is empty, set `items_removed: 0`.
 
-Note: GitHub issues (`github-issue` type) are intentionally excluded —
-they can be closed and reopened, so terminal state is not permanent.
+NOTE: Scheduling (CronCreate/CronList) is NOT performed by this agent —
+the parent SKILL.md handles all scheduling after receiving the summary.
 
 ## Return
 
@@ -112,8 +83,5 @@ items_checked: N
 items_changed: N
 notifications_sent: N
 items_removed: N
-changed_urls: <comma-separated list of changed item URLs, or empty>
+changed_urls: <comma-separated URLs from changed[], or empty>
 ```
-
-`changed_urls` must list every URL from `changed[]` (before any removals in
-Step 5). When `items_changed: 0`, output `changed_urls:` with an empty value.
