@@ -112,4 +112,8 @@ items_checked: N
 items_changed: N
 notifications_sent: N
 items_removed: N
+changed_urls: <comma-separated list of changed item URLs, or empty>
 ```
+
+`changed_urls` must list every URL from `changed[]` (before any removals in
+Step 5). When `items_changed: 0`, output `changed_urls:` with an empty value.

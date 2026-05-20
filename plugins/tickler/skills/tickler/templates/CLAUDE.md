@@ -7,6 +7,7 @@ workHours:
   days: "1-5"
 interval: 60
 autoRemoveTerminal: true
+openInBrowser: false
 githubToken: ""
 jiraBaseUrl: ""
 jiraEmail: ""
@@ -26,6 +27,7 @@ to configure, and add notes or type definitions below as you use the skill.
 - **workHours.days** — Active days, 1=Mon 7=Sun (default `1-5`)
 - **interval** — Minutes between checks during work hours (default 60)
 - **autoRemoveTerminal** — Auto-remove merged/closed GitHub PRs from the watch list after notifying (default `true`; set to `false` to keep them)
+- **openInBrowser** — Open each changed item URL in the browser after a check cycle (default `false`; macOS only)
 - **githubToken** — Personal access token; required for private repos
 - **jiraBaseUrl** — e.g. `https://myorg.atlassian.net`
 - **jiraEmail** + **jiraToken** — Jira Cloud API credentials
