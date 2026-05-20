@@ -6,6 +6,7 @@ workHours:
   end: 18
   days: "1-5"
 interval: 60
+autoRemoveTerminal: true
 githubToken: ""
 jiraBaseUrl: ""
 jiraEmail: ""
@@ -24,6 +25,7 @@ to configure, and add notes or type definitions below as you use the skill.
 - **workHours.start / end** — Active hours in local time (0–23)
 - **workHours.days** — Active days, 1=Mon 7=Sun (default `1-5`)
 - **interval** — Minutes between checks during work hours (default 60)
+- **autoRemoveTerminal** — Auto-remove merged/closed GitHub PRs from the watch list after notifying (default `true`; set to `false` to keep them)
 - **githubToken** — Personal access token; required for private repos
 - **jiraBaseUrl** — e.g. `https://myorg.atlassian.net`
 - **jiraEmail** + **jiraToken** — Jira Cloud API credentials

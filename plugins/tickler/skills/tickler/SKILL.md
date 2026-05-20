@@ -52,6 +52,7 @@ which is auto-loaded as context. Key fields:
 - `endHour`: work hours end, 0–23, user's local time (default `18`)
 - `days`: working days range e.g. `1-5` (Mon=1 Sun=7, default `1-5`)
 - `interval`: check interval in minutes (default `15`)
+- `autoRemoveTerminal`: auto-remove merged/closed GitHub PRs from watch list after notifying (default `true`)
 - `githubToken`: optional for public repos; required for private
 - `jiraBaseUrl`: e.g. `https://myorg.atlassian.net`
 - `jiraEmail` + `jiraToken`: Jira API credentials
@@ -114,7 +115,7 @@ Parse `$ARGUMENTS` before doing anything else:
    - Skip CronCreate if a matching cron already exists per CronList.
 
 7. **Report** to user:
-   - items_checked, items_changed, notifications_sent (from MONITOR_SUMMARY)
+   - items_checked, items_changed, notifications_sent, items_removed (from MONITOR_SUMMARY)
    - Next run scheduled for: `<time>`
 
 ## Gotchas
