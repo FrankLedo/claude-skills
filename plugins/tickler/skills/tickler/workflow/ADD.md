@@ -30,21 +30,61 @@ Parse the argument: `add <url-or-id> [condition]`
    ```
    If the URL already exists, tell the user and offer to update the condition.
 
-2. Fetch current state immediately (run a single check for this item using
-   the methods in CHECK.md) to establish a baseline — avoids a
-   false-positive on first monitor cycle.
+2. Fetch baseline state immediately via `check.js` (one item only) to avoid
+   a false-positive on the first monitor cycle:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/check.js \
+     --data $CLAUDE_PLUGIN_DATA \
+     --token <githubToken> \
+     --jira-base-url <jiraBaseUrl> --jira-email <jiraEmail> --jira-token <jiraToken>
+   ```
+   Use the `updated_states[url]` value as the baseline. (The item is not yet
+   in tickler.json so check.js will return an empty result — fetch the state
+   directly using `fetch-github.js` or `fetch-jira.js` instead if simpler.)
 
-3. Add the item and its baseline state atomically:
+3. Ask: "Would you like to add any actions?" Offer examples relevant to the
+   item type:
+
+   **GitHub PR:**
+   - `When approved → merge (squash)` — `{ "on": "approved", "do": "merge", "confirm": true }`
+   - `When merged → transition Jira ticket` — `{ "on": "merged", "do": "jira_transition", "args": { "to": "Done" } }`
+   - `When merged → remove from watch list` — `{ "on": "merged", "do": "remove_from_watch" }`
+   - `When merged → run a command` — `{ "on": "merged", "do": "run", "args": { "cmd": "/my-skill" } }`
+
+   **GitHub Issue:**
+   - `When closed → remove from watch list` — `{ "on": "closed", "do": "remove_from_watch" }`
+   - `When closed → post a comment` — `{ "on": "closed", "do": "comment", "args": { "body": "Done!" } }`
+
+   **Jira:**
+   - `When status changes → remove from watch list` — `{ "on": "status:<value>", "do": "remove_from_watch" }`
+
+   Valid verbs:
+
+   | Verb | Notes | confirm default |
+   |---|---|---|
+   | `merge` | `args.method`: `squash` (default), `merge`, `rebase` | `true` |
+   | `close` | Closes issue or PR | `true` |
+   | `comment` | Posts `args.body` as a comment | `false` |
+   | `jira_transition` | Transitions to `args.to` status | `false` |
+   | `remove_from_watch` | Drops from tickler.json | `false` |
+   | `run` | Dispatches `args.cmd` as an Agent prompt | `false` |
+   | `slack_dm` | DMs `args.body` to the configured slackUserId | `false` |
+
+   If the user declines or says "no actions", skip to step 4 with an empty actions array.
+
+4. Add the item and its baseline state atomically:
    ```bash
    node $SKILL_SCRIPTS_DIR/scripts/state.js add-item \
      --data $CLAUDE_PLUGIN_DATA \
      '<item-json>' \
      '<baseline-state-json>'
    ```
-   The script auto-fills `id` (UUID v4), `added` (ISO 8601), and
-   `snoozed_until: null`. It exits 1 if the URL already exists.
+   `item-json` must include `actions` (empty array `[]` if none). The script
+   auto-fills `id` (UUID v4), `added` (ISO 8601), and `snoozed_until: null`.
+   It exits 1 if the URL already exists.
 
-4. Confirm to user: "Watching [url] for [condition]."
+5. Confirm to user: "Watching [url] for [condition]." If actions were added,
+   list them: "Actions: when [on] → [do]."
 
 ## Removing an item
 
