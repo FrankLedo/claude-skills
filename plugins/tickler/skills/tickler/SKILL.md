@@ -34,6 +34,7 @@ workflow/
   FORMATS.md     — tickler.json and state.json schemas
 scripts/
   check.js        — fetch state + detect changes for all items (deterministic)
+  actions.js      — execute tier-1 actions (merge, close, comment, jira_transition, remove_from_watch)
   fetch-github.js — GitHub REST API fetcher (used by check.js)
   fetch-jira.js   — Jira REST API fetcher (used by check.js)
   state.js        — tickler.json read/write API
@@ -103,8 +104,9 @@ Parse `$ARGUMENTS` before doing anything else:
    - `local_hour=<N>`, `local_dow=<N>`
 
 5. Receive `MONITOR_SUMMARY` from the agent. Parse `items_checked`,
-   `items_changed`, `notifications_sent`, `items_removed`, and `changed_urls`
-   from it. State writes are handled by the monitor agent.
+   `items_changed`, `notifications_sent`, `items_removed`, `actions_fired`,
+   `actions_pending_confirm`, and `changed_urls` from it. State writes are
+   handled by the monitor agent.
 
 5a. If `openInBrowser: true` in config and `changed_urls` is non-empty,
     open each URL in the browser — one separate Bash call per URL:
@@ -113,6 +115,15 @@ Parse `$ARGUMENTS` before doing anything else:
     open "<url2>"
     ```
     (Multi-arg `open` causes blank pages on macOS; one call per URL is required.)
+
+5b. If `actions_pending_confirm` > 0, **Read**
+    `${CLAUDE_PLUGIN_DATA}/pending_actions.json`. For each action, use
+    `AskUserQuestion` to prompt the user before firing:
+    > "[label] — [url] triggered '[on]'. Execute '[do]'?"
+    - Yes → call `actions.js` with the action's verb and args (same invocation
+      as the monitor agent uses in Step 3), then remove the item from
+      `pending_actions.json`.
+    - No → remove the item from `pending_actions.json` without executing.
 
 6. **Schedule next run** using `CronList` then `CronCreate`:
    - If step 2 was skipped (empty tickler.json path), run
@@ -135,7 +146,8 @@ Parse `$ARGUMENTS` before doing anything else:
         `interval` minutes.
 
 7. **Report** to user:
-   - items_checked, items_changed, notifications_sent, items_removed (from MONITOR_SUMMARY)
+   - items_checked, items_changed, notifications_sent, items_removed,
+     actions_fired (from MONITOR_SUMMARY)
    - Next run scheduled for: `<time>`
 
 ## Gotchas

@@ -59,7 +59,36 @@ config file and shows current settings.
 |------|-----------|
 | GitHub PR | `approved`, `merged`, `closed`, `changes-requested`, `new-comment`, `any` |
 | GitHub Issue | `closed`, `new-comment`, `labeled:<label>`, `any` |
-| Jira | `status:<value>`, `new-comment`, `any` |
+| Jira | `status:<value>`, `new-comment`, `new-subtask`, `any` |
+
+## Actions
+
+Items can carry an `actions[]` array that fires verbs when a condition triggers.
+The `/tickler add` command will offer to set these up interactively.
+
+```json
+{
+  "url": "https://github.com/org/repo/pull/123",
+  "condition": "any",
+  "actions": [
+    { "on": "approved", "do": "merge", "confirm": true, "args": { "method": "squash" } },
+    { "on": "merged",   "do": "jira_transition", "args": { "to": "Done" } },
+    { "on": "merged",   "do": "remove_from_watch" }
+  ]
+}
+```
+
+| Verb | What it does | `confirm` default |
+|---|---|---|
+| `merge` | `gh pr merge` (`args.method`: squash/merge/rebase) | `true` |
+| `close` | Closes the PR or issue | `true` |
+| `comment` | Posts `args.body` as a comment | `false` |
+| `jira_transition` | Transitions Jira ticket to `args.to` status | `false` |
+| `remove_from_watch` | Removes item from the watch list | `false` |
+| `run` | Dispatches `args.cmd` as an Agent prompt | `false` |
+| `slack_dm` | DMs `args.body` to your configured Slack user | `false` |
+
+Actions with `confirm: true` are held until you approve them — tickler will prompt you before firing. Actions are idempotent: once a `on:do` pair fires successfully it won't re-fire even if the condition is re-observed.
 
 ## Notifications
 
@@ -77,9 +106,8 @@ export CLAUDE_PLUGIN_DATA="$HOME/.tickler-dev"
 mkdir -p "$CLAUDE_PLUGIN_DATA"
 
 # Copy starter state files
-cp "$SKILL_SCRIPTS_DIR/templates/CLAUDE.md"    "$CLAUDE_PLUGIN_DATA/CLAUDE.md"
-cp "$SKILL_SCRIPTS_DIR/templates/tickler.json" "$CLAUDE_PLUGIN_DATA/tickler.json"
-cp "$SKILL_SCRIPTS_DIR/templates/state.json"   "$CLAUDE_PLUGIN_DATA/state.json"
+cp "$SKILL_SCRIPTS_DIR/templates/CLAUDE.md" "$CLAUDE_PLUGIN_DATA/CLAUDE.md"
+echo "[]" > "$CLAUDE_PLUGIN_DATA/tickler.json"
 ```
 
 Then edit `~/.tickler-dev/CLAUDE.md` (YAML frontmatter) with your credentials
