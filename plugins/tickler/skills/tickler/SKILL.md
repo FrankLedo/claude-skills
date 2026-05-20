@@ -120,9 +120,18 @@ Parse `$ARGUMENTS` before doing anything else:
    - Outside work hours (`local_hour >= endHour` or `local_hour < startHour`
      or `local_dow` outside `days`):
      → one-shot cron for `startHour:03` on next active day
-   - Within work hours:
-     → recurring cron at `interval` minutes
-   - Skip CronCreate if a matching cron already exists per CronList.
+   - Within work hours — drift-aware scheduling:
+     1. Run `CronList` and look for an existing recurring tickler cron.
+     2. If one exists, compute minutes until its next fire relative to
+        `current_time`. If that gap is less than `interval - 10` minutes
+        (e.g., < 50 min for a 60-min interval), the current run was late
+        and the next fire is too soon — cancel the existing cron with
+        `CronDelete` and create a fresh recurring cron at `interval`
+        minutes anchored to now.
+     3. If the gap is ≥ `interval - 10` minutes, the schedule is healthy —
+        leave the existing cron in place (skip CronCreate).
+     4. If no existing cron is found, create a new recurring cron at
+        `interval` minutes.
 
 7. **Report** to user:
    - items_checked, items_changed, notifications_sent, items_removed (from MONITOR_SUMMARY)
