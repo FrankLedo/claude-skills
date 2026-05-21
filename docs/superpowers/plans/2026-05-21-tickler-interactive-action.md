@@ -26,7 +26,7 @@
 **Files:**
 - Modify: `plugins/tickler/skills/tickler/agents/monitor-prompt.md`
 
-- [ ] **Step 1: Add `interactive` to the Tier-2 actions section**
+- [x] **Step 1: Add `interactive` to the Tier-2 actions section**
 
 Find this block (currently lines 105–114):
 
@@ -74,7 +74,7 @@ Track totals: `actions_fired` (executed this cycle),
 `interactive_pending` (written to interactive_pending.json).
 ```
 
-- [ ] **Step 2: Add `interactive_pending` to MONITOR_SUMMARY**
+- [x] **Step 2: Add `interactive_pending` to MONITOR_SUMMARY**
 
 Find the Return block:
 
@@ -103,7 +103,7 @@ interactive_pending: N
 changed_urls: <comma-separated URLs from changed[], or empty>
 ```
 
-- [ ] **Step 3: Verify the edit reads correctly**
+- [x] **Step 3: Verify the edit reads correctly**
 
 Read `agents/monitor-prompt.md` and confirm:
 - `interactive` appears in the Tier-2 header line alongside `run` and `slack_dm`
@@ -111,7 +111,7 @@ Read `agents/monitor-prompt.md` and confirm:
 - `interactive_pending: N` appears in MONITOR_SUMMARY
 - The slack-mode skip warning is present
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add plugins/tickler/skills/tickler/agents/monitor-prompt.md
@@ -125,7 +125,7 @@ git commit -m "feat(tickler): add interactive verb to monitor-prompt — writes 
 **Files:**
 - Modify: `plugins/tickler/skills/tickler/SKILL.md`
 
-- [ ] **Step 1: Add `interactive_pending` to the MONITOR_SUMMARY parse line**
+- [x] **Step 1: Add `interactive_pending` to the MONITOR_SUMMARY parse line**
 
 Find (line ~135):
 
@@ -143,7 +143,7 @@ Replace with:
    `actions_pending_confirm`, `interactive_pending`, and `changed_urls` from it.
 ```
 
-- [ ] **Step 2: Insert step 5c after step 5b**
+- [x] **Step 2: Insert step 5c after step 5b**
 
 Find the block ending step 5b (line ~155):
 
@@ -197,7 +197,7 @@ Replace with:
 6. **Schedule next run** using `CronList` then `CronCreate`.
 ```
 
-- [ ] **Step 3: Verify the edit reads correctly**
+- [x] **Step 3: Verify the edit reads correctly**
 
 Read `SKILL.md` and confirm:
 - `interactive_pending` appears in the MONITOR_SUMMARY parse line in step 5
@@ -205,7 +205,7 @@ Read `SKILL.md` and confirm:
 - The step 5c loop covers all option types: tier-1 verbs, tier-2 `run`, all three snooze variants, Remove, Dismiss, Other/free-form
 - File deletion at end of 5c is present
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add plugins/tickler/skills/tickler/SKILL.md
@@ -219,7 +219,7 @@ git commit -m "feat(tickler): add step 5c interaction loop for interactive_pendi
 **Files:**
 - Modify: `plugins/tickler/skills/tickler/workflow/ADD.md`
 
-- [ ] **Step 1: Add `interactive` to the verb table**
+- [x] **Step 1: Add `interactive` to the verb table**
 
 Find the verb table (lines ~63–71):
 
@@ -250,7 +250,7 @@ Replace with:
    | `interactive` | Presents a menu + free-form conversation loop to the user (direct mode only); `args.prompt` required, `args.options[]` optional | N/A |
 ```
 
-- [ ] **Step 2: Add an `interactive` example to the GitHub PR actions examples**
+- [x] **Step 2: Add an `interactive` example to the GitHub PR actions examples**
 
 Find the GitHub PR examples block (around line 46–52):
 
@@ -273,14 +273,14 @@ Add one more line:
    - `When CI fails → interactive menu` — `{ "on": "ci-failed", "do": "interactive", "args": { "prompt": "CI failed — how do you want to respond?", "options": [{ "label": "Post a comment", "do": "comment", "args": { "body": "CI failed — investigating" } }, { "label": "Close PR", "do": "close" }] } }`
 ```
 
-- [ ] **Step 3: Verify the edit reads correctly**
+- [x] **Step 3: Verify the edit reads correctly**
 
 Read `workflow/ADD.md` and confirm:
 - `interactive` row is present in the verb table with correct notes
 - The CI-failed example is present in the GitHub PR examples block
 - No other rows were accidentally modified
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add plugins/tickler/skills/tickler/workflow/ADD.md
@@ -294,7 +294,7 @@ git commit -m "docs(tickler): add interactive verb to ADD.md verb table and exam
 **Files:**
 - Modify: `plugins/tickler/README.md`
 
-- [ ] **Step 1: Add `interactive` to the verb table**
+- [x] **Step 1: Add `interactive` to the verb table**
 
 Find the verb table in the Actions section:
 
@@ -321,7 +321,7 @@ Replace with:
 | `interactive` | Presents a menu + free-form conversation when triggered (`args.prompt` required, `args.options[]` optional; direct mode only) | N/A |
 ```
 
-- [ ] **Step 2: Add a recipe for interactive CI failure response**
+- [x] **Step 2: Add a recipe for interactive CI failure response**
 
 Find the last recipe before `## Actions` (the Jira recipe):
 
@@ -360,14 +360,14 @@ When CI fails, tickler presents the menu and waits for your input. Choose an opt
 ## Actions
 ```
 
-- [ ] **Step 3: Verify the edit reads correctly**
+- [x] **Step 3: Verify the edit reads correctly**
 
 Read `README.md` and confirm:
 - `interactive` row appears in the Actions verb table
 - The CI failure interactive recipe appears in the Recipes section before `## Actions`
 - No existing content was accidentally removed or duplicated
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add plugins/tickler/README.md
@@ -378,7 +378,7 @@ git commit -m "docs(tickler): add interactive verb to README verb table and reci
 
 ## Task 5: Open PR
 
-- [ ] **Step 1: Push branch and open PR**
+- [x] **Step 1: Push branch and open PR**
 
 ```bash
 git checkout -b feat/tickler-interactive-action
@@ -389,7 +389,7 @@ gh pr create \
   --body "Adds the \`interactive\` tier-2 action verb. When triggered, the monitor agent writes to \`interactive_pending.json\`. The parent skill presents an \`AskUserQuestion\` menu (pre-wired options + built-ins), executes the chosen action, and loops until dismissed. Picking 'Other' opens a free-form conversation with full item context. Closes the gap between binary confirm gates and fully agentic actions."
 ```
 
-- [ ] **Step 2: Verify PR is open and links back to the design spec**
+- [x] **Step 2: Verify PR is open and links back to the design spec**
 
 ```bash
 gh pr view --web
