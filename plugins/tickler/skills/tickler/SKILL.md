@@ -54,7 +54,7 @@ which is auto-loaded as context. Key fields:
 - `endHour`: work hours end, 0–23, user's local time (default `18`)
 - `days`: working days range e.g. `1-5` (Mon=1 Sun=7, default `1-5`)
 - `interval`: check interval in minutes (default `15`)
-- `autoRemoveTerminal`: auto-remove merged/closed GitHub PRs from watch list after notifying (default `true`)
+- `autoRemoveTerminal`: auto-remove merged/closed GitHub PRs and closed GitHub issues from watch list after notifying (default `true`)
 - `openInBrowser`: open each changed item URL in the browser after a check cycle (default `false`; macOS only)
 - `githubToken`: optional for public repos; required for private
 - `jiraBaseUrl`: e.g. `https://myorg.atlassian.net`
@@ -83,30 +83,45 @@ Parse `$ARGUMENTS` before doing anything else:
 
 ## Check Cycle (no-arg invocation)
 
-1. In parallel, **Read**:
-   - `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` — parse YAML frontmatter only.
-     If missing, run setup.
-   - `${CLAUDE_PLUGIN_DATA}/tickler.json` — if missing or empty, proceed
-     to scheduling (step 5) without dispatching the agent.
+1. **Read** `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` — parse YAML frontmatter only.
+   If missing, run setup.
 
 2. Run `date -u +"%Y-%m-%dT%H:%M:%SZ" && date +"%H %u"` via Bash to get
    the actual `current_time` (UTC ISO 8601), `local_hour` (0–23), and
    `local_dow` (1=Mon … 7=Sun). Do NOT estimate or infer the time from
    context.
 
-3. **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`.
+3. Run `check.js` directly via Bash (resolving `env:` token prefixes from config):
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/check.js \
+     --data $CLAUDE_PLUGIN_DATA \
+     --token <githubToken> \
+     --jira-base-url <jiraBaseUrl> \
+     --jira-email <jiraEmail> \
+     --jira-token <jiraToken>
+   ```
+   Parse output: `items_checked`, `changed[]`, `terminal_items[]`.
+   State is saved by `check.js` automatically.
 
-4. **Dispatch Agent** with the monitor prompt. Pass as part of the prompt text:
+   **If `items_checked === 0`** (empty watch list): skip to step 6 (scheduling).
+   Report `items_checked: 0`, all other counts 0.
+
+4. **If `changed` is empty AND `terminal_items` is empty**: no agent needed.
+   Skip to step 6. Report `items_checked: N`, `items_changed: 0`, all others 0.
+
+5. **Changes detected** — **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`,
+   then **Dispatch Agent** (`model: haiku`) with the monitor prompt. Pass as
+   part of the prompt text:
    - `SKILL_SCRIPTS_DIR=<resolved path>`
    - `CLAUDE_PLUGIN_DATA=<resolved path>`
    - All config values from CLAUDE.md frontmatter
    - `current_time=<ISO 8601 UTC timestamp>`
    - `local_hour=<N>`, `local_dow=<N>`
+   - `CHECK_OUTPUT=<full JSON string from check.js>`
 
-5. Receive `MONITOR_SUMMARY` from the agent. Parse `items_checked`,
+   Receive `MONITOR_SUMMARY` from the agent. Parse `items_checked`,
    `items_changed`, `notifications_sent`, `items_removed`, `actions_fired`,
-   `actions_pending_confirm`, and `changed_urls` from it. State writes are
-   handled by the monitor agent.
+   `actions_pending_confirm`, and `changed_urls` from it.
 
 5a. If `openInBrowser: true` in config and `changed_urls` is non-empty,
     open each URL in the browser — one separate Bash call per URL:
@@ -126,7 +141,7 @@ Parse `$ARGUMENTS` before doing anything else:
     - No → remove the item from `pending_actions.json` without executing.
 
 6. **Schedule next run** using `CronList` then `CronCreate`:
-   - If step 2 was skipped (empty tickler.json path), run
+   - If step 3 returned `items_checked === 0` (empty list), run
      `date -u +"%Y-%m-%dT%H:%M:%SZ" && date +"%H %u"` to get
      `local_hour` and `local_dow` now — do NOT estimate
    - Outside work hours (`local_hour >= endHour` or `local_hour < startHour`

@@ -23,7 +23,8 @@ treat them as literal strings, not shell variables to expand.
 | `jiraEmail` | Jira email (may be empty) |
 | `jiraToken` | Jira API token (may be empty) |
 | `current_time` | ISO 8601 UTC timestamp (now, at agent launch) |
-| `autoRemoveTerminal` | `"true"` or `"false"` — remove merged/closed PRs after notifying |
+| `autoRemoveTerminal` | `"true"` or `"false"` — remove merged/closed PRs and closed issues after notifying |
+| `CHECK_OUTPUT` | JSON string from `check.js` — pre-parsed, do not re-run check.js |
 
 **Note:** All path variables are injected as resolved absolute paths — treat them as literal strings, not shell variables to expand.
 
@@ -39,20 +40,15 @@ need structured data, use `node state.js list` or `node state.js get-state`.
 
 ## Steps
 
-### Step 1 — Check Items
+### Step 1 — Parse Check Output
 
-```bash
-node <SKILL_SCRIPTS_DIR>/scripts/check.js \
-  --data <CLAUDE_PLUGIN_DATA> \
-  --token <githubToken> \
-  --jira-base-url <jiraBaseUrl> \
-  --jira-email <jiraEmail> \
-  --jira-token <jiraToken>
-```
+The parent skill has already run `check.js` and saved state. Parse the
+pre-loaded `CHECK_OUTPUT` JSON — do NOT run `check.js` again.
 
-Parse the JSON output fields: `items_checked`, `changed[]`, `terminal_prs[]`.
-State is saved by `check.js` automatically — no separate save step needed.
-If `items_checked` is 0 (empty watch list), skip to Return with zeroed summary.
+Fields to extract: `items_checked`, `changed[]`, `terminal_items[]`.
+
+If `changed` is empty and `terminal_items` is empty, the parent would not
+have dispatched this agent — so this state should not occur.
 
 ### Step 2 — Notify
 
@@ -116,10 +112,10 @@ each action:
 Track totals: `actions_fired` (executed this cycle),
 `actions_pending_confirm` (written to pending_actions.json).
 
-### Step 4 — Auto-remove terminal PRs
+### Step 4 — Auto-remove terminal items
 
-If `autoRemoveTerminal` is `"true"`, remove each URL in `terminal_prs[]`
-(state was already saved by check.js; this only removes the watch entry):
+If `autoRemoveTerminal` is `"true"`, remove each URL in `terminal_items[]`
+(merged/closed PRs and closed issues; state already saved by check.js):
 
 ```bash
 node <SKILL_SCRIPTS_DIR>/scripts/state.js remove-item --data <CLAUDE_PLUGIN_DATA> "<url>"
