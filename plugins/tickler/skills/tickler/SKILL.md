@@ -33,11 +33,12 @@ workflow/
   NOTIFY.md      — notification logic (direct / Slack)
   FORMATS.md     — tickler.json and state.json schemas
 scripts/
-  check.js        — fetch state + detect changes for all items (deterministic)
-  actions.js      — execute tier-1 actions (merge, close, comment, jira_transition, remove_from_watch)
-  fetch-github.js — GitHub REST API fetcher (used by check.js)
-  fetch-jira.js   — Jira REST API fetcher (used by check.js)
-  state.js        — tickler.json read/write API
+  check.js               — fetch state + detect changes for all items (deterministic)
+  adaptive-interval.js   — compute next check interval based on activity
+  actions.js             — execute tier-1 actions (merge, close, comment, jira_transition, remove_from_watch)
+  fetch-github.js        — GitHub REST API fetcher (used by check.js)
+  fetch-jira.js          — Jira REST API fetcher (used by check.js)
+  state.js               — tickler.json read/write API
 ```
 
 **Token optimization:** Only SKILL.md loads every cycle. All
@@ -53,7 +54,9 @@ which is auto-loaded as context. Key fields:
 - `startHour`: work hours start, 0–23, user's local time (default `8`)
 - `endHour`: work hours end, 0–23, user's local time (default `18`)
 - `days`: working days range e.g. `1-5` (Mon=1 Sun=7, default `1-5`)
-- `interval`: check interval in minutes (default `15`)
+- `interval`: base check interval in minutes (default `60`)
+- `intervalMin`: minimum interval after activity (default `interval/2`, min 15); shortens checks after a change
+- `intervalMax`: maximum interval during quiet periods (default `interval*2`); backs off when nothing changes
 - `autoRemoveTerminal`: auto-remove merged/closed GitHub PRs and closed GitHub issues from watch list after notifying (default `true`)
 - `openInBrowser`: open each changed item URL in the browser after a check cycle (default `false`; macOS only)
 - `githubToken`: optional for public repos; required for private
@@ -103,6 +106,17 @@ Parse `$ARGUMENTS` before doing anything else:
    Parse output: `items_checked`, `changed[]`, `terminal_items[]`.
    State is saved by `check.js` automatically.
 
+   Then compute the adaptive next interval:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/adaptive-interval.js \
+     --data $CLAUDE_PLUGIN_DATA \
+     --base <interval> \
+     [--min <intervalMin>] [--max <intervalMax>] \
+     --changed <1 if changed[] non-empty, else 0>
+   ```
+   Capture the printed integer as `next_interval`. Use it in step 6 instead of
+   the static `interval` config value.
+
    **If `items_checked === 0`** (empty watch list): skip to step 6 (scheduling).
    Report `items_checked: 0`, all other counts 0.
 
@@ -140,7 +154,9 @@ Parse `$ARGUMENTS` before doing anything else:
       `pending_actions.json`.
     - No → remove the item from `pending_actions.json` without executing.
 
-6. **Schedule next run** using `CronList` then `CronCreate`:
+6. **Schedule next run** using `CronList` then `CronCreate`.
+   Use `next_interval` (from the adaptive-interval.js call in step 3) as the
+   interval value. If step 3 was skipped (empty watch list), use `interval` from config.
    - If step 3 returned `items_checked === 0` (empty list), run
      `date -u +"%Y-%m-%dT%H:%M:%SZ" && date +"%H %u"` to get
      `local_hour` and `local_dow` now — do NOT estimate
@@ -150,15 +166,14 @@ Parse `$ARGUMENTS` before doing anything else:
    - Within work hours — drift-aware scheduling:
      1. Run `CronList` and look for an existing recurring tickler cron.
      2. If one exists, compute minutes until its next fire relative to
-        `current_time`. If that gap is less than `interval - 10` minutes
-        (e.g., < 50 min for a 60-min interval), the current run was late
-        and the next fire is too soon — cancel the existing cron with
-        `CronDelete` and create a fresh recurring cron at `interval`
-        minutes anchored to now.
-     3. If the gap is ≥ `interval - 10` minutes, the schedule is healthy —
+        `current_time`. If that gap is less than `next_interval - 10` minutes,
+        the current run was late and the next fire is too soon — cancel with
+        `CronDelete` and create a fresh recurring cron at `next_interval` minutes
+        anchored to now.
+     3. If the gap is ≥ `next_interval - 10` minutes, the schedule is healthy —
         leave the existing cron in place (skip CronCreate).
      4. If no existing cron is found, create a new recurring cron at
-        `interval` minutes.
+        `next_interval` minutes.
 
 7. **Report** to user:
    - items_checked, items_changed, notifications_sent, items_removed,
