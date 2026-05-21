@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.10](https://github.com/FrankLedo/claude-skills/compare/v0.3.9...v0.3.10) (2026-05-21)
+
+
+### Features
+
+* **tickler:** interactive action verb — menu + free-form conversation on trigger ([#83](https://github.com/FrankLedo/claude-skills/issues/83)) ([e61abc2](https://github.com/FrankLedo/claude-skills/commit/e61abc2abb2fd553f19943a579722b99957fc21f))
+
 ## [0.3.9](https://github.com/FrankLedo/claude-skills/compare/v0.3.8...v0.3.9) (2026-05-21)
 
 
