@@ -30,17 +30,25 @@ Parse the argument: `add <url-or-id> [condition]`
    ```
    If the URL already exists, tell the user and offer to update the condition.
 
-2. Fetch baseline state immediately via `check.js` (one item only) to avoid
-   a false-positive on the first monitor cycle:
+2. Fetch baseline state immediately to avoid a false-positive on the first
+   monitor cycle. Use the appropriate fetch script directly (the item is not
+   yet in tickler.json so check.js would skip it):
+
+   **GitHub PR or issue:**
    ```bash
-   node $SKILL_SCRIPTS_DIR/scripts/check.js \
-     --data $CLAUDE_PLUGIN_DATA \
-     --token <githubToken> \
+   node $SKILL_SCRIPTS_DIR/scripts/fetch-github.js \
+     --url <item-url> [--token <githubToken>]
+   ```
+
+   **Jira:**
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/fetch-jira.js \
+     --url <item-url> \
      --jira-base-url <jiraBaseUrl> --jira-email <jiraEmail> --jira-token <jiraToken>
    ```
-   Use the `updated_states[url]` value as the baseline. (The item is not yet
-   in tickler.json so check.js will return an empty result — fetch the state
-   directly using `fetch-github.js` or `fetch-jira.js` instead if simpler.)
+
+   The script prints a JSON state object. Use it as the `baseline-state-json`
+   in step 4.
 
 3. Ask: "Would you like to add any actions?" Offer examples relevant to the
    item type:

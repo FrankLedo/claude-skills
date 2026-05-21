@@ -140,6 +140,53 @@ Tickler notifies you when the ticket transitions to Done. Combine with `remove_f
 
 ---
 
+### Mark a draft PR ready when CI passes, then auto-merge on approval
+
+```text
+/tickler add https://github.com/org/repo/pull/123 any
+```
+
+Actions:
+- When `ci-passed` → `shell` cmd: `gh pr ready https://github.com/org/repo/pull/123`
+- When `approved` → `merge` (squash, confirm: true)
+- When `merged` → `jira_transition` to: In Review
+- When `merged` → `remove_from_watch`
+
+CI going green promotes the draft, a reviewer approves it, tickler asks you to confirm the merge, then closes the Jira ticket and cleans up — all from a single watch.
+
+---
+
+### React to a stalled PR: comment, then DM yourself if no response
+
+```text
+/tickler add https://github.com/org/repo/pull/123 any
+```
+
+Actions:
+- When `changes-requested` → `comment` body: "Addressed the review comments, please take another look."
+- When `changes-requested` → `shell` cmd: `gh pr edit https://github.com/org/repo/pull/123 --add-label "needs-review"`
+- When `approved` → `merge` (squash, confirm: true)
+- When `merged` → `remove_from_watch`
+
+Multiple actions can share the same `on` trigger — they all fire in order.
+
+---
+
+### Watch a dependency update PR: auto-merge if CI passes, close if it fails
+
+```text
+/tickler add https://github.com/org/repo/pull/456 any
+```
+
+Actions:
+- When `ci-passed` → `merge` (squash, confirm: false)
+- When `ci-failed` → `close`
+- When `merged` → `remove_from_watch`
+
+Fully automated dependency merging — no human in the loop unless something goes wrong.
+
+---
+
 ## Actions
 
 Items can carry an `actions[]` array that fires verbs when a condition triggers.
@@ -181,7 +228,7 @@ You can bootstrap a local dev session by setting them in your shell before
 starting Claude Code:
 
 ```bash
-export SKILL_SCRIPTS_DIR="/path/to/claude-skills/skills/tickler"
+export SKILL_SCRIPTS_DIR="/path/to/claude-skills/plugins/tickler/skills/tickler"
 export CLAUDE_PLUGIN_DATA="$HOME/.tickler-dev"
 mkdir -p "$CLAUDE_PLUGIN_DATA"
 
@@ -193,6 +240,18 @@ echo "[]" > "$CLAUDE_PLUGIN_DATA/tickler.json"
 Then edit `~/.tickler-dev/CLAUDE.md` (YAML frontmatter) with your credentials
 and invoke the skill by asking Claude to read `$SKILL_SCRIPTS_DIR/SKILL.md`
 and run it.
+
+## How it works / token cost
+
+Tickler is designed to run continuously in the background without burning tokens on quiet periods.
+
+- **State is fetched by a Node.js script** (`check.js`), not a model — zero AI cost per cycle when nothing has changed.
+- **On quiet cycles** (nothing changed), the skill schedules the next run and exits immediately — no agent is dispatched.
+- **On active cycles** (something changed), a small [Claude Haiku](https://www.anthropic.com/claude) agent handles notifications and fires actions. Haiku is the fastest and cheapest Claude model.
+- **Adaptive intervals** — tickler automatically shortens the polling interval after activity (burst mode) and lengthens it during quiet stretches, so it's responsive when things are happening and cheap when they're not.
+- **Actions are tier-1 by default** — `merge`, `close`, `comment`, `shell`, etc. run as deterministic scripts with no model invocation. Only `run` (agentic tasks) and `slack_dm` require the agent.
+
+Typical cost for a watch list of 5–10 items: a few cents per day during active development, near zero during quiet periods.
 
 ## Requirements
 
