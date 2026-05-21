@@ -273,11 +273,15 @@ async function main() {
         entry.new_subtasks = (newState.subtasks || []).filter(st => !prevKeys.has(st.key));
       }
 
-      // Attach matching actions, filtered for idempotency
+      // Attach matching actions, filtered for idempotency.
+      // Each action's `on` is evaluated independently so that items with
+      // condition:"any" correctly fire actions with specific on: triggers.
       const firedKeys = new Set(item.state?.fired_actions || []);
-      const pending = (item.actions || []).filter(a =>
-        a.on === triggeredCond && !firedKeys.has(`${a.on}:${a.do}`)
-      );
+      const pending = (item.actions || []).filter(a => {
+        if (firedKeys.has(`${a.on}:${a.do}`)) return false;
+        const syntheticItem = { ...item, condition: a.on };
+        return conditionMet(syntheticItem, newState, item.state);
+      });
       if (pending.length) entry.pending_actions = pending;
 
       changed.push(entry);
