@@ -87,7 +87,8 @@ each action:
   ```bash
   node <SKILL_SCRIPTS_DIR>/scripts/actions.js \
     --do <verb> --url <item-url> --data <CLAUDE_PLUGIN_DATA> \
-    [--method <merge.args.method>] [--body <comment.args.body>] \
+    [--method <merge.args.method>] [--admin <merge.args.admin ? "true" : omit>] \
+    [--body <comment.args.body>] \
     [--to <jira_transition.args.to>] \
     [--jira-base-url <jiraBaseUrl>] [--jira-email <jiraEmail>] [--jira-token <jiraToken>]
 

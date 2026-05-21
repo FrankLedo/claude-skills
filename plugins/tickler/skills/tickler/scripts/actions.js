@@ -35,6 +35,7 @@ const verb         = get('--do');
 const itemUrl      = get('--url');
 const dataDir      = get('--data')           || '';
 const method       = get('--method')         || 'squash';
+const adminMerge   = get('--admin') === 'true';
 const body         = get('--body')           || '';
 const jiraTo       = get('--to')             || '';
 const jiraBaseUrl  = get('--jira-base-url')  || '';
@@ -71,7 +72,8 @@ async function doMerge() {
   const { isPR } = parseGitHubUrl(itemUrl);
   if (!isPR) fail('merge verb is only valid for GitHub PRs');
   const flag = method === 'merge' ? '--merge' : method === 'rebase' ? '--rebase' : '--squash';
-  gh('pr', 'merge', flag, '--auto', `"${itemUrl}"`);
+  const extra = adminMerge ? ['--admin'] : [];
+  gh('pr', 'merge', flag, '--auto', ...extra, `"${itemUrl}"`);
   ok();
 }
 

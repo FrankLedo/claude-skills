@@ -159,7 +159,7 @@ The `/tickler add` command will offer to set these up interactively.
 
 | Verb | What it does | `confirm` default |
 |---|---|---|
-| `merge` | `gh pr merge` (`args.method`: squash/merge/rebase) | `true` |
+| `merge` | `gh pr merge` (`args.method`: squash/merge/rebase; `args.admin: true` to bypass branch protection) | `true` |
 | `close` | Closes the PR or issue | `true` |
 | `comment` | Posts `args.body` as a comment | `false` |
 | `jira_transition` | Transitions Jira ticket to `args.to` status | `false` |
