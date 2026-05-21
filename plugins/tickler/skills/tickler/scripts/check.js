@@ -28,11 +28,23 @@ const path = require('path');
 const argv = process.argv.slice(2);
 const get  = flag => { const i = argv.indexOf(flag); return i !== -1 ? argv[i + 1] : null; };
 
-const dataDir     = get('--data');
-const githubToken = get('--token')          || '';
-const jiraBaseUrl = get('--jira-base-url')  || '';
-const jiraEmail   = get('--jira-email')     || '';
-const jiraToken   = get('--jira-token')     || '';
+const dataDir = get('--data');
+
+// Resolve env: prefix — "env:GH_CLI" → gh auth token, "env:VAR" → process.env.VAR
+function resolveToken(val) {
+  if (!val) return val;
+  if (val === 'env:GH_CLI') {
+    const { execSync } = require('child_process');
+    return execSync('gh auth token', { encoding: 'utf8' }).trim();
+  }
+  if (val.startsWith('env:')) return process.env[val.slice(4)] || '';
+  return val;
+}
+
+const githubToken = resolveToken(get('--token')         || '');
+const jiraBaseUrl =              get('--jira-base-url') || '';
+const jiraEmail   = resolveToken(get('--jira-email')    || '');
+const jiraToken   = resolveToken(get('--jira-token')    || '');
 
 if (!dataDir) { console.error('Missing --data'); process.exit(1); }
 

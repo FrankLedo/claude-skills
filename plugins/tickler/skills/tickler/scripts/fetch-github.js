@@ -16,7 +16,19 @@ const args = process.argv.slice(2);
 const urlIdx = args.indexOf('--url');
 const tokenIdx = args.indexOf('--token');
 const url = urlIdx !== -1 ? args[urlIdx + 1] : null;
-const token = tokenIdx !== -1 ? args[tokenIdx + 1] : null;
+const rawToken = tokenIdx !== -1 ? args[tokenIdx + 1] : null;
+
+function resolveToken(val) {
+  if (!val) return val;
+  if (val === 'env:GH_CLI') {
+    const { execSync } = require('child_process');
+    return execSync('gh auth token', { encoding: 'utf8' }).trim();
+  }
+  if (val.startsWith('env:')) return process.env[val.slice(4)] || '';
+  return val;
+}
+
+const token = resolveToken(rawToken);
 
 if (!url) {
   console.error(JSON.stringify({ error: 'Missing --url' }));

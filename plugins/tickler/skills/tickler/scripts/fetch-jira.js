@@ -12,10 +12,20 @@
 const args = process.argv.slice(2);
 const get = (flag) => { const i = args.indexOf(flag); return i !== -1 ? args[i + 1] : null; };
 
+function resolveToken(val) {
+  if (!val) return val;
+  if (val === 'env:GH_CLI') {
+    const { execSync } = require('child_process');
+    return execSync('gh auth token', { encoding: 'utf8' }).trim();
+  }
+  if (val.startsWith('env:')) return process.env[val.slice(4)] || '';
+  return val;
+}
+
 const ticket   = get('--ticket');
 const baseUrl  = get('--base-url');
-const email    = get('--email');
-const token    = get('--token');
+const email    = resolveToken(get('--email'));
+const token    = resolveToken(get('--token'));
 
 if (!ticket || !baseUrl || !email || !token) {
   console.error(JSON.stringify({ error: 'Missing required args: --ticket --base-url --email --token' }));
