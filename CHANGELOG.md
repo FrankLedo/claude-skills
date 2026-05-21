@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.5](https://github.com/FrankLedo/claude-skills/compare/v0.3.4...v0.3.5) (2026-05-21)
+
+
+### Features
+
+* **tickler:** adaptive check interval — burst mode after activity, back off when quiet ([#75](https://github.com/FrankLedo/claude-skills/issues/75)) ([608a357](https://github.com/FrankLedo/claude-skills/commit/608a357888465956abfa3aa505816a2e40e90309)), closes [#72](https://github.com/FrankLedo/claude-skills/issues/72)
+
 ## [0.3.4](https://github.com/FrankLedo/claude-skills/compare/v0.3.3...v0.3.4) (2026-05-21)
 
 
