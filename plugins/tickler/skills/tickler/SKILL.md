@@ -135,7 +135,7 @@ Parse `$ARGUMENTS` before doing anything else:
 
    Receive `MONITOR_SUMMARY` from the agent. Parse `items_checked`,
    `items_changed`, `notifications_sent`, `items_removed`, `actions_fired`,
-   `actions_pending_confirm`, and `changed_urls` from it.
+   `actions_pending_confirm`, `interactive_pending`, and `changed_urls` from it.
 
 5a. If `openInBrowser: true` in config and `changed_urls` is non-empty,
     open each URL in the browser — one separate Bash call per URL:
@@ -153,6 +153,42 @@ Parse `$ARGUMENTS` before doing anything else:
       as the monitor agent uses in Step 3), then remove the item from
       `pending_actions.json`.
     - No → remove the item from `pending_actions.json` without executing.
+
+5c. If `interactive_pending` > 0, **Read**
+    `${CLAUDE_PLUGIN_DATA}/interactive_pending.json`. For each item, run
+    this loop until the user dismisses:
+
+    **Present** `AskUserQuestion` with:
+    - Question: `item.prompt`
+    - Options: `item.options` (pre-wired) + any context-aware additions you
+      identify from `item.context` (e.g. "Approve PR" if `approvals === 0`)
+    - Always append built-ins: `Snooze 1h` / `Snooze 4h` / `Snooze tomorrow`
+      / `Remove from watch` / `Dismiss` / `Other`
+
+    **Execute** the chosen option:
+    - Tier-1 verb (`comment`, `close`, `merge`, `jira_transition`,
+      `remove_from_watch`) → call `actions.js` (same invocation as step 5b)
+    - Tier-2 verb (`run`) → dispatch Agent with `args.cmd` + item URL as context
+    - `Snooze 1h` → `node state.js set-state --data $CLAUDE_PLUGIN_DATA '<url>' '{"snoozed_until":"<now+1h ISO>"}'`
+    - `Snooze 4h` → same with now+4h
+    - `Snooze tomorrow` → same with start of next work day (`startHour:00`)
+    - `Remove from watch` → `node state.js remove-item --data $CLAUDE_PLUGIN_DATA '<url>'`
+    - `Dismiss` → no action; exit loop for this item
+    - `Other` → print item context inline and enter free-form conversation:
+      ```
+      [item.label] — [item.url]
+      Condition: [item.on] | [key context fields from item.context]
+
+      What would you like to do?
+      ```
+      Handle the user's request naturally (call scripts as needed), then ask
+      "Anything else on '[item.label]'?" to return to the options loop.
+
+    After each execution (except Dismiss): ask "Anything else on '[item.label]'?"
+    - Yes → loop back to AskUserQuestion
+    - No / Dismiss → move to next item
+
+    After all items handled: delete `interactive_pending.json`.
 
 6. **Schedule next run** using `CronList` then `CronCreate`.
    Use `next_interval` (from the adaptive-interval.js call in step 3) as the
