@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1](https://github.com/FrankLedo/claude-skills/compare/v0.3.0...v0.3.1) (2026-05-21)
+
+
+### Features
+
+* **slack-monitor:** auto-detect system timezone; add stale-epoch guardrail ([6bb9f6c](https://github.com/FrankLedo/claude-skills/commit/6bb9f6cf28e97a4a7e95e6b2a76cd539939be93b))
+* **slack-monitor:** auto-detect system timezone; add stale-epoch guardrail ([06772ed](https://github.com/FrankLedo/claude-skills/commit/06772ed7ebb89b63b8acb117ef82024423043a5e))
+
+
+### Bug Fixes
+
+* **tickler:** resolve env: token prefix in check.js and fetch scripts ([#62](https://github.com/FrankLedo/claude-skills/issues/62)) ([cc9e73d](https://github.com/FrankLedo/claude-skills/commit/cc9e73de9091e4f0e04c0a1386e8a28203b4d79c))
+
 ## [0.3.0](https://github.com/FrankLedo/claude-skills/compare/v0.2.0...v0.3.0) (2026-05-20)
 
 
