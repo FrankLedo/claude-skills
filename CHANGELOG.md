@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2](https://github.com/FrankLedo/claude-skills/compare/v0.3.1...v0.3.2) (2026-05-21)
+
+
+### Features
+
+* **tickler:** check.js saves state directly, eliminating updated_states round-trip ([#64](https://github.com/FrankLedo/claude-skills/issues/64)) ([74f540f](https://github.com/FrankLedo/claude-skills/commit/74f540f33af195a9f5bf501f01e7f99f6c6dca53)), closes [#63](https://github.com/FrankLedo/claude-skills/issues/63)
+
 ## [0.3.1](https://github.com/FrankLedo/claude-skills/compare/v0.3.0...v0.3.1) (2026-05-21)
 
 
