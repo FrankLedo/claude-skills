@@ -40,9 +40,9 @@ node <SKILL_SCRIPTS_DIR>/scripts/check.js \
   --jira-token <jiraToken>
 ```
 
-Parse the JSON output fields: `items_checked`, `changed[]`, `updated_states`,
-`terminal_prs[]`. If `items_checked` is 0 (empty watch list), skip to Return
-with zeroed summary.
+Parse the JSON output fields: `items_checked`, `changed[]`, `terminal_prs[]`.
+State is saved by `check.js` automatically — no separate save step needed.
+If `items_checked` is 0 (empty watch list), skip to Return with zeroed summary.
 
 ### Step 2 — Notify
 
@@ -59,16 +59,18 @@ each action:
 **Tier-1 actions** (`merge`, `close`, `comment`, `jira_transition`,
 `remove_from_watch`) — split by `confirm` flag:
 
-- `confirm: false` (or absent) → execute immediately via `actions.js`:
+- `confirm: false` (or absent) → execute immediately via `actions.js`, then
+  record the fired key so it does not re-fire next cycle:
   ```bash
   node <SKILL_SCRIPTS_DIR>/scripts/actions.js \
     --do <verb> --url <item-url> --data <CLAUDE_PLUGIN_DATA> \
     [--method <merge.args.method>] [--body <comment.args.body>] \
     [--to <jira_transition.args.to>] \
     [--jira-base-url <jiraBaseUrl>] [--jira-email <jiraEmail>] [--jira-token <jiraToken>]
+
+  node <SKILL_SCRIPTS_DIR>/scripts/state.js append-fired-action \
+    --data <CLAUDE_PLUGIN_DATA> '<item-url>' '<on>:<do>'
   ```
-  On success, record the key `<on>:<do>` in `updated_states[url].fired_actions[]`
-  so it does not re-fire next cycle.
 
 - `confirm: true` → do NOT execute. Write to
   `<CLAUDE_PLUGIN_DATA>/pending_actions.json` (append or create):
@@ -87,18 +89,10 @@ each action:
 Track totals: `actions_fired` (executed this cycle),
 `actions_pending_confirm` (written to pending_actions.json).
 
-### Step 4 — Save State
+### Step 4 — Auto-remove terminal PRs
 
-Write all updated states back — one atomic call. Include any `fired_actions`
-additions from Step 3:
-
-```bash
-node <SKILL_SCRIPTS_DIR>/scripts/state.js set-states --data <CLAUDE_PLUGIN_DATA> '<updated_states_as_json_string>'
-```
-
-### Step 5 — Auto-remove terminal PRs
-
-If `autoRemoveTerminal` is `"true"`, remove each URL in `terminal_prs[]`:
+If `autoRemoveTerminal` is `"true"`, remove each URL in `terminal_prs[]`
+(state was already saved by check.js; this only removes the watch entry):
 
 ```bash
 node <SKILL_SCRIPTS_DIR>/scripts/state.js remove-item --data <CLAUDE_PLUGIN_DATA> "<url>"
