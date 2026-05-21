@@ -11,7 +11,7 @@
  *   {
  *     "items_checked": N,
  *     "changed": [{ "url": "...", "condition": "..." }],
- *     "terminal_prs": ["url", ...]
+ *     "terminal_items": ["url", ...]   // merged/closed PRs + closed issues
  *   }
  *
  * Exits 0 always. Item-level errors are logged to stderr and the item is skipped.
@@ -220,7 +220,7 @@ async function main() {
 
   const changed        = [];
   const updated_states = {};
-  const terminal_prs   = [];
+  const terminal_items = [];
 
   for (const { item, newState, error } of results) {
     if (error) {
@@ -231,7 +231,9 @@ async function main() {
     updated_states[item.url] = newState;
 
     if (item.type === 'github-pr' && (newState.merged || newState.status === 'closed')) {
-      terminal_prs.push(item.url);
+      terminal_items.push(item.url);
+    } else if (item.type === 'github-issue' && newState.status === 'closed') {
+      terminal_items.push(item.url);
     }
 
     // first check: establish baseline only, no change notification
@@ -269,7 +271,7 @@ async function main() {
   console.log(JSON.stringify({
     items_checked: results.filter(r => !r.error).length,
     changed,
-    terminal_prs,
+    terminal_items,
   }, null, 2));
 }
 
