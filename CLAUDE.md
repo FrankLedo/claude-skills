@@ -8,11 +8,13 @@ A Claude Code plugin marketplace collection. Plugins are prompt-driven workflows
 
 ## Release Process
 
-Releases are fully automated via GitHub Actions + Release Please:
-- Merging to `main` triggers automated version bumping and CHANGELOG generation
-- Uses **Conventional Commits**: `feat:` = minor bump, `fix:` = patch bump, `feat!:` = major bump
+Releases are fully automated via GitHub Actions + Release Please. See `.github/WORKFLOWS.md` for the full process.
+
+- Merging to `main` triggers automated version bumping and per-plugin CHANGELOG generation
+- Uses **Conventional Commits** with plugin scope: `feat(slack-monitor):` bumps slack-monitor, `feat(tickler):` bumps tickler
+- `feat:` = minor bump, `fix:` = patch bump, `feat!:` = major bump
 - PR titles must pass semantic commit validation (`amannn/action-semantic-pull-request`)
-- Version is bumped in both `.claude-plugin/plugin.json` (root) and `plugins/<plugin>/.claude-plugin/plugin.json`
+- Each plugin has its own version and `CHANGELOG.md` in `plugins/<plugin>/CHANGELOG.md`
 
 ## Plugin Architecture
 
@@ -72,7 +74,9 @@ MCP dependencies: `slack_search_public_and_private`, `slack_read_thread`, `slack
 ## Adding a New Plugin
 
 1. Create `plugins/<plugin-name>/` following the structure above
-2. Add the plugin's `plugin.json` path to the `extra-files` array in `release-please-config.json` (there is a single root package `.`; do not add a new entry under `packages`)
-3. Update root `README.md` plugins table
-4. Add the plugin to `.claude-plugin/marketplace.json` — this is what the Claude Code marketplace reads; omitting it means the plugin won't appear to users
-5. Reference `planning/` for in-progress specs (not published to marketplace)
+2. Add a new entry under `packages` in `release-please-config.json` for `plugins/<plugin-name>` with its own `changelog-path` and `extra-files`
+3. Add the new plugin's version to `.release-please-manifest.json`
+4. Create `plugins/<plugin-name>/CHANGELOG.md` (empty header is fine; release-please populates it)
+5. Update root `README.md` plugins table
+6. Add the plugin to `.claude-plugin/marketplace.json` — this is what the Claude Code marketplace reads; omitting it means the plugin won't appear to users
+7. Reference `planning/` for in-progress specs (not published to marketplace)

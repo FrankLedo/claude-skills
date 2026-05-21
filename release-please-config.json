@@ -1,22 +1,25 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "packages": {
-    ".": {
+    "plugins/slack-monitor": {
       "release-type": "simple",
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "plugins/slack-monitor/CHANGELOG.md",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "extra-files": [
         {
           "type": "json",
-          "path": ".claude-plugin/plugin.json",
-          "jsonpath": "$.version"
-        },
-        {
-          "type": "json",
           "path": "plugins/slack-monitor/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
-        },
+        }
+      ]
+    },
+    "plugins/tickler": {
+      "release-type": "simple",
+      "changelog-path": "plugins/tickler/CHANGELOG.md",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true,
+      "extra-files": [
         {
           "type": "json",
           "path": "plugins/tickler/.claude-plugin/plugin.json",
