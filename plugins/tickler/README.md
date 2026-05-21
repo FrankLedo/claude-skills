@@ -156,7 +156,7 @@ CI going green promotes the draft, a reviewer approves it, tickler asks you to c
 
 ---
 
-### React to a stalled PR: comment, then DM yourself if no response
+### React to a stalled PR: comment and label when changes requested
 
 ```text
 /tickler add https://github.com/org/repo/pull/123 any
@@ -187,6 +187,21 @@ Fully automated dependency merging — no human in the loop unless something goe
 
 ---
 
+### Watch a PR for CI failure → interactive response
+
+```text
+/tickler add https://github.com/org/repo/pull/123 ci-failed
+```
+
+When prompted for actions, set:
+- When `ci-failed` → `interactive`, prompt: "CI failed — how do you want to respond?", options:
+  - Post a comment (`comment`, body: "CI failed — investigating")
+  - Close PR (`close`)
+
+When CI fails, tickler presents the menu and waits for your input. Choose an option or say anything — tickler enters a free-form conversation with full PR context loaded.
+
+---
+
 ## Actions
 
 Items can carry an `actions[]` array that fires verbs when a condition triggers.
@@ -214,6 +229,7 @@ The `/tickler add` command will offer to set these up interactively.
 | `run` | Dispatches `args.cmd` as an Agent prompt (multi-step reasoning or slash commands) | `false` |
 | `shell` | Runs `args.cmd` directly — no agent spawned; use for single shell commands (e.g. `gh pr ready`) | `false` |
 | `slack_dm` | DMs `args.body` to your configured Slack user | `false` |
+| `interactive` | Presents a menu + free-form conversation when triggered (`args.prompt` required, `args.options[]` optional; direct mode only) | N/A |
 
 Actions with `confirm: true` are held until you approve them — tickler will prompt you before firing. Actions are idempotent: once a `on:do` pair fires successfully it won't re-fire even if the condition is re-observed.
 

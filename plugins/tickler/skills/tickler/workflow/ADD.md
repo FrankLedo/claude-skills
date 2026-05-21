@@ -58,6 +58,7 @@ Parse the argument: `add <url-or-id> [condition]`
    - `When merged → transition Jira ticket` — `{ "on": "merged", "do": "jira_transition", "args": { "to": "Done" } }`
    - `When merged → remove from watch list` — `{ "on": "merged", "do": "remove_from_watch" }`
    - `When merged → run a command` — `{ "on": "merged", "do": "run", "args": { "cmd": "/my-skill" } }`
+   - `When CI fails → interactive menu` — `{ "on": "ci-failed", "do": "interactive", "args": { "prompt": "CI failed — how do you want to respond?", "options": [{ "label": "Post a comment", "do": "comment", "args": { "body": "CI failed — investigating" } }, { "label": "Close PR", "do": "close" }] } }`
 
    **GitHub Issue:**
    - `When closed → remove from watch list` — `{ "on": "closed", "do": "remove_from_watch" }`
@@ -70,7 +71,7 @@ Parse the argument: `add <url-or-id> [condition]`
 
    | Verb | Notes | confirm default |
    |---|---|---|
-   | `merge` | `args.method`: `squash` (default), `merge`, `rebase` | `true` |
+   | `merge` | `args.method`: `squash` (default), `merge`, `rebase`; `args.admin: true` to bypass branch protection | `true` |
    | `close` | Closes issue or PR | `true` |
    | `comment` | Posts `args.body` as a comment | `false` |
    | `jira_transition` | Transitions to `args.to` status | `false` |
@@ -78,6 +79,7 @@ Parse the argument: `add <url-or-id> [condition]`
    | `run` | Dispatches `args.cmd` as an Agent prompt (multi-step / slash commands) | `false` |
    | `shell` | Runs `args.cmd` directly via execSync — no agent spawned (use for single shell commands like `gh pr ready`) | `false` |
    | `slack_dm` | DMs `args.body` to the configured slackUserId | `false` |
+   | `interactive` | Presents a menu + free-form conversation loop to the user (direct mode only); `args.prompt` required, `args.options[]` optional | N/A |
 
    If the user declines or says "no actions", skip to step 4 with an empty actions array.
 
