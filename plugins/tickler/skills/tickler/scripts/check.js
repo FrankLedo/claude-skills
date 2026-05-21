@@ -7,11 +7,10 @@
  *                 [--jira-base-url <url>] [--jira-email <email>] [--jira-token <token>]
  *
  * Reads tickler.json from <dir>, fetches each non-snoozed item in parallel,
- * evaluates conditions against stored state, and prints JSON to stdout:
+ * saves updated state back to tickler.json via state.js, and prints JSON to stdout:
  *   {
  *     "items_checked": N,
  *     "changed": [{ "url": "...", "condition": "..." }],
- *     "updated_states": { "<url>": stateObject, ... },
  *     "terminal_prs": ["url", ...]
  *   }
  *
@@ -20,8 +19,9 @@
 
 'use strict';
 
-const fs   = require('fs');
-const path = require('path');
+const fs           = require('fs');
+const path         = require('path');
+const { execSync } = require('child_process');
 
 // --- arg parsing -----------------------------------------------------------
 
@@ -33,10 +33,7 @@ const dataDir = get('--data');
 // Resolve env: prefix — "env:GH_CLI" → gh auth token, "env:VAR" → process.env.VAR
 function resolveToken(val) {
   if (!val) return val;
-  if (val === 'env:GH_CLI') {
-    const { execSync } = require('child_process');
-    return execSync('gh auth token', { encoding: 'utf8' }).trim();
-  }
+  if (val === 'env:GH_CLI') return execSync('gh auth token', { encoding: 'utf8' }).trim();
   if (val.startsWith('env:')) return process.env[val.slice(4)] || '';
   return val;
 }
@@ -221,9 +218,9 @@ async function checkItem(item) {
 async function main() {
   const results = await Promise.all(active.map(checkItem));
 
-  const changed       = [];
+  const changed        = [];
   const updated_states = {};
-  const terminal_prs  = [];
+  const terminal_prs   = [];
 
   for (const { item, newState, error } of results) {
     if (error) {
@@ -260,10 +257,18 @@ async function main() {
     }
   }
 
+  // Save updated state directly — eliminates the updated_states round-trip through the agent
+  if (Object.keys(updated_states).length > 0) {
+    const stateScript = path.join(__dirname, 'state.js');
+    execSync(
+      `node "${stateScript}" set-states --data "${dataDir}" '${JSON.stringify(updated_states).replace(/'/g, "'\\''")}'`,
+      { encoding: 'utf8' }
+    );
+  }
+
   console.log(JSON.stringify({
     items_checked: results.filter(r => !r.error).length,
     changed,
-    updated_states,
     terminal_prs,
   }, null, 2));
 }

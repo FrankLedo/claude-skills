@@ -17,6 +17,8 @@
  *   add-item <item-json> [<baseline-state-json>]
  *                                append item; optional initial state; auto-fills id/added
  *   remove-item <url>            remove item by url
+ *   append-fired-action <url> <key>
+ *                                append an "on:do" key to item.state.fired_actions (idempotent)
  *   migrate                      one-time: merge legacy state.json into item.state fields
  */
 
@@ -143,6 +145,24 @@ switch (cmd) {
     if (kept.length === items.length) die(`Not found: ${url}`);
     writeAtomic(kept);
     console.log(`Removed: ${url}`);
+    break;
+  }
+
+  case 'append-fired-action': {
+    // append-fired-action <url> <key>  e.g. "approved:merge"
+    const url = pos[0];
+    const key = pos[1];
+    if (!url || !key) die('append-fired-action requires <url> <key>');
+    const items = readItems();
+    const item  = items.find(i => i.url === url);
+    if (!item) die(`Not found: ${url}`);
+    if (!item.state) item.state = {};
+    if (!Array.isArray(item.state.fired_actions)) item.state.fired_actions = [];
+    if (!item.state.fired_actions.includes(key)) {
+      item.state.fired_actions.push(key);
+      writeAtomic(items);
+    }
+    console.log(`Recorded fired action ${key} for ${url}`);
     break;
   }
 
