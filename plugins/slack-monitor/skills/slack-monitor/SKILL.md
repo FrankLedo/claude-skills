@@ -195,15 +195,24 @@ will be routed via remote-control.
 
 3. **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`.
 
-4. **Dispatch Agent** with `model: haiku` and the monitor prompt.
+4. Resolve timezone: if the `timezone` config field is empty or missing,
+   run:
+   ```bash
+   node "$SKILL_SCRIPTS_DIR/scripts/detect-timezone.js"
+   ```
+   Use the output (e.g. `America/Los_Angeles`) as the resolved timezone.
+   Otherwise use the configured value as-is.
+
+5. **Dispatch Agent** with `model: haiku` and the monitor prompt.
    Pass the following as part of the prompt text:
    - `SKILL_SCRIPTS_DIR=<resolved path>`
    - `CLAUDE_PLUGIN_DATA=<resolved path>`
-   - All config values from CLAUDE.md frontmatter
+   - All config values from CLAUDE.md frontmatter (with `timezone`
+     replaced by the resolved value from step 4)
    - `last_scan=<timestamp>`
    - `current_time=<timestamp>`
 
-5. Receive the `MONITOR_SUMMARY` block from the agent.
+6. Receive the `MONITOR_SUMMARY` block from the agent.
    State writes (`last_scan`, `search_cache.json`) are handled by the
    monitor agent (see `agents/monitor-prompt.md` Step 5).
    Run:
@@ -214,9 +223,9 @@ will be routed via remote-control.
    (Clears the checkpoint in the parent context where plugin data dir
    permissions are established.)
 
-6. **Schedule next scan** using `CronList`, `CronDelete`, `CronCreate`:
+7. **Schedule next scan** using `CronList`, `CronDelete`, `CronCreate`:
    - Compute `local_hour` and `local_dow` from `current_time` using
-     the `timezone` config field (IANA). Fall back to UTC if unset.
+     the resolved timezone from step 4.
    - Determine desired schedule:
      - Outside working hours (`local_hour >= endHour` or
        `local_hour < startHour` or `local_dow` outside `days`):
@@ -232,7 +241,7 @@ will be routed via remote-control.
      `CronCreate` with the correct schedule.
    - If no cron exists → `CronCreate` with the correct schedule.
 
-7. **Report** to user:
+8. **Report** to user:
    - `messages_found`: N (DMs: N / mentions: N / threads: N)
    - `auto_sent`: N
    - `queued`: N this cycle
