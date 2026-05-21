@@ -164,7 +164,8 @@ The `/tickler add` command will offer to set these up interactively.
 | `comment` | Posts `args.body` as a comment | `false` |
 | `jira_transition` | Transitions Jira ticket to `args.to` status | `false` |
 | `remove_from_watch` | Removes item from the watch list | `false` |
-| `run` | Dispatches `args.cmd` as an Agent prompt | `false` |
+| `run` | Dispatches `args.cmd` as an Agent prompt (multi-step reasoning or slash commands) | `false` |
+| `shell` | Runs `args.cmd` directly — no agent spawned; use for single shell commands (e.g. `gh pr ready`) | `false` |
 | `slack_dm` | DMs `args.body` to your configured Slack user | `false` |
 
 Actions with `confirm: true` are held until you approve them — tickler will prompt you before firing. Actions are idempotent: once a `on:do` pair fires successfully it won't re-fire even if the condition is re-observed.

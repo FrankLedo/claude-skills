@@ -80,7 +80,7 @@ For each entry in `changed[]` that has a `pending_actions` array, process
 each action:
 
 **Tier-1 actions** (`merge`, `close`, `comment`, `jira_transition`,
-`remove_from_watch`) — split by `confirm` flag:
+`remove_from_watch`, `shell`) — split by `confirm` flag:
 
 - `confirm: false` (or absent) → execute immediately via `actions.js`, then
   record the fired key so it does not re-fire next cycle:
@@ -90,7 +90,8 @@ each action:
     [--method <merge.args.method>] [--admin <merge.args.admin ? "true" : omit>] \
     [--body <comment.args.body>] \
     [--to <jira_transition.args.to>] \
-    [--jira-base-url <jiraBaseUrl>] [--jira-email <jiraEmail>] [--jira-token <jiraToken>]
+    [--jira-base-url <jiraBaseUrl>] [--jira-email <jiraEmail>] [--jira-token <jiraToken>] \
+    [--cmd <shell.args.cmd>]
 
   node <SKILL_SCRIPTS_DIR>/scripts/state.js append-fired-action \
     --data <CLAUDE_PLUGIN_DATA> '<item-url>' '<on>:<do>'
@@ -105,8 +106,9 @@ each action:
 **Tier-2 actions** (`run`, `slack_dm`) — always execute immediately
 (these are never subject to confirm, as they are themselves agentic):
 
-- `run`: dispatch an **Agent** with `args.cmd` (a slash command or prompt
-  string) as the prompt, plus the item URL as context.
+- `run`: dispatch an **Agent** with `args.cmd` (a slash command or multi-step
+  prompt) as the prompt, plus the item URL as context. Use `shell` instead for
+  single shell commands — it is far cheaper (no agent spawn).
 - `slack_dm`: use the Slack MCP `slack_send_message` tool to DM
   `slackUserId` with `args.body`.
 
