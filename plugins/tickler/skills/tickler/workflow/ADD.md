@@ -67,7 +67,8 @@ Parse the argument: `add <url-or-id> [condition]`
    | `comment` | Posts `args.body` as a comment | `false` |
    | `jira_transition` | Transitions to `args.to` status | `false` |
    | `remove_from_watch` | Drops from tickler.json | `false` |
-   | `run` | Dispatches `args.cmd` as an Agent prompt | `false` |
+   | `run` | Dispatches `args.cmd` as an Agent prompt (multi-step / slash commands) | `false` |
+   | `shell` | Runs `args.cmd` directly via execSync — no agent spawned (use for single shell commands like `gh pr ready`) | `false` |
    | `slack_dm` | DMs `args.body` to the configured slackUserId | `false` |
 
    If the user declines or says "no actions", skip to step 4 with an empty actions array.

@@ -8,6 +8,7 @@
  *                   [--body <text>]                  (comment only)
  *                   [--to <status>]                  (jira_transition only)
  *                   [--jira-base-url <url>] [--jira-email <e>] [--jira-token <t>]
+ *                   [--cmd <shell-command>]           (shell only)
  *
  * Tier-1 verbs (deterministic, no model needed):
  *   merge              — gh pr merge
@@ -15,9 +16,10 @@
  *   comment            — post a comment via gh api
  *   jira_transition    — transition a Jira issue via REST API
  *   remove_from_watch  — state.js remove-item
+ *   shell              — run args.cmd directly via execSync (no agent spawned)
  *
- * Tier-2 verbs (run, slack_dm) are NOT handled here — the monitor agent
- * dispatches those as Agent calls directly.
+ * Tier-2 verbs (run, slack_dm, interactive) are NOT handled here — the monitor
+ * agent dispatches those directly.
  *
  * Prints JSON to stdout: { "success": true } or { "error": "..." }
  * Exits 0 on success, 1 on error.
@@ -41,12 +43,13 @@ const jiraTo       = get('--to')             || '';
 const jiraBaseUrl  = get('--jira-base-url')  || '';
 const jiraEmail    = get('--jira-email')     || '';
 const jiraToken    = get('--jira-token')     || '';
+const cmd          = get('--cmd')            || '';
 
-function ok()        { console.log(JSON.stringify({ success: true })); }
+function ok(extra)   { console.log(JSON.stringify({ success: true, ...extra })); }
 function fail(msg)   { console.error(JSON.stringify({ error: msg })); process.exit(1); }
 
 if (!verb)    fail('Missing --do');
-if (!itemUrl) fail('Missing --url');
+if (verb !== 'shell' && !itemUrl) fail('Missing --url');
 
 // --- helpers ---------------------------------------------------------------
 
@@ -133,6 +136,12 @@ function doRemoveFromWatch() {
   ok();
 }
 
+function doShell() {
+  if (!cmd) fail('shell verb requires --cmd');
+  const output = execSync(cmd, { encoding: 'utf8', shell: true }).trim();
+  ok({ output });
+}
+
 // --- dispatch --------------------------------------------------------------
 
 async function main() {
@@ -142,8 +151,9 @@ async function main() {
     case 'comment':                 doComment();        break;
     case 'jira_transition':   await doJiraTransition(); break;
     case 'remove_from_watch':       doRemoveFromWatch(); break;
+    case 'shell':                   doShell();          break;
     default:
-      fail(`Unknown verb: ${verb}. Tier-2 verbs (run, slack_dm) are handled by the monitor agent.`);
+      fail(`Unknown verb: ${verb}. Tier-2 verbs (run, slack_dm, interactive) are handled by the monitor agent.`);
   }
 }
 
