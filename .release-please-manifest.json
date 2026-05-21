@@ -1,3 +1,4 @@
 {
-  ".": "0.3.7"
+  "plugins/slack-monitor": "0.3.7",
+  "plugins/tickler": "0.3.7"
 }
