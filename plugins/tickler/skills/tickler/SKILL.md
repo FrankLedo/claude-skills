@@ -167,11 +167,21 @@ Parse `$ARGUMENTS` before doing anything else:
 
     **Execute** the chosen option:
     - Tier-1 verb (`comment`, `close`, `merge`, `jira_transition`,
-      `remove_from_watch`) → call `actions.js` (same invocation as step 5b)
-    - Tier-2 verb (`run`) → dispatch Agent with `args.cmd` + item URL as context
+      `remove_from_watch`) → call `actions.js` using the chosen option's `do`
+      and `args` fields:
+      ```bash
+      node <SKILL_SCRIPTS_DIR>/scripts/actions.js \
+        --do <option.do> --url <item.url> --data <CLAUDE_PLUGIN_DATA> \
+        [--body <option.args.body>] [--method <option.args.method>] \
+        [--admin <option.args.admin>] [--to <option.args.to>]
+      ```
+    - Tier-2 verb (`run`) → dispatch Agent with `option.args.cmd` as the
+      prompt and `item.url` appended as context (same pattern as the monitor
+      agent uses for `run` actions)
     - `Snooze 1h` → `node state.js set-state --data $CLAUDE_PLUGIN_DATA '<url>' '{"snoozed_until":"<now+1h ISO>"}'`
     - `Snooze 4h` → same with now+4h
-    - `Snooze tomorrow` → same with start of next work day (`startHour:00`)
+    - `Snooze tomorrow` → same with start of next work day (next calendar day
+      at `startHour:00` according to config — skip weekends if `days` excludes them)
     - `Remove from watch` → `node state.js remove-item --data $CLAUDE_PLUGIN_DATA '<url>'`
     - `Dismiss` → no action; exit loop for this item
     - `Other` → print item context inline and enter free-form conversation:
