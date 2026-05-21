@@ -27,6 +27,16 @@ treat them as literal strings, not shell variables to expand.
 
 **Note:** All path variables are injected as resolved absolute paths — treat them as literal strings, not shell variables to expand.
 
+## IMPORTANT — Do Not Re-read Data Files
+
+**Do NOT read `tickler.json`, `state.json`, or any other data files directly.**
+All state fetching and diffing is performed by `check.js`. Trust its `changed[]`
+output entirely — do not verify, re-derive, or second-guess it. There is no
+`state.json`; state is embedded in `tickler.json` since v0.3.1.
+
+Do not use `cat`, `python3`, or any other tool to inspect data files. If you
+need structured data, use `node state.js list` or `node state.js get-state`.
+
 ## Steps
 
 ### Step 1 — Check Items
@@ -46,10 +56,27 @@ If `items_checked` is 0 (empty watch list), skip to Return with zeroed summary.
 
 ### Step 2 — Notify
 
-If `changed[]` is non-empty, **Read** `<SKILL_SCRIPTS_DIR>/workflow/NOTIFY.md`
-and deliver notifications per the instructions there.
-
 If `changed[]` is empty, skip this step entirely.
+
+**If `notify` is `"direct"`** — print to the terminal for each changed item:
+
+```
+── Tickler ────────────────────────────────
+  ✓ <condition met description> — "<title>"
+    <url>
+────────────────────────────────────────────
+```
+
+Then offer to snooze: "Snooze for [1h / 4h / tomorrow / remove]?"
+
+- `1h` → set `snoozed_until` to now + 1 hour (call `state.js set-state`)
+- `4h` → set `snoozed_until` to now + 4 hours
+- `tomorrow` → set `snoozed_until` to start of next work day
+- `remove` → call `state.js remove-item`
+
+**If `notify` is `"slack"`** — **Read** `<SKILL_SCRIPTS_DIR>/workflow/NOTIFY.md`
+and follow the Slack notification instructions there. If `slack_send_message`
+is unavailable, fall back to direct mode and warn the user.
 
 ### Step 3 — Execute Actions
 
