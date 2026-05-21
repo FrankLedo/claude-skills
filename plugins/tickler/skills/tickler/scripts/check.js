@@ -82,8 +82,14 @@ async function fetchGitHub(url) {
   const data = await res.json();
 
   if (isPR) {
-    const reviewsRes = await fetch(`${base}/pulls/${number}/reviews`, { headers });
-    const reviews    = reviewsRes.ok ? await reviewsRes.json() : [];
+    const sha = data.head.sha;
+    const [reviewsRes, checksRes] = await Promise.all([
+      fetch(`${base}/pulls/${number}/reviews`, { headers }),
+      fetch(`${base}/commits/${sha}/check-runs?per_page=100`, { headers }),
+    ]);
+    const reviews   = reviewsRes.ok ? await reviewsRes.json() : [];
+    const checksData = checksRes.ok ? await checksRes.json() : { check_runs: [] };
+    const runs       = checksData.check_runs || [];
 
     const latestByUser = {};
     for (const r of reviews) {
@@ -91,12 +97,29 @@ async function fetchGitHub(url) {
     }
     const states = Object.values(latestByUser);
 
+    // Summarize CI: latest run per check name, then aggregate
+    const latestRun = {};
+    for (const run of runs) latestRun[run.name] = run;
+    const allRuns = Object.values(latestRun);
+    let ci_status = 'none';
+    if (allRuns.length > 0) {
+      const FAIL = new Set(['failure', 'cancelled', 'timed_out', 'action_required']);
+      if (allRuns.some(r => r.status !== 'completed')) {
+        ci_status = 'pending';
+      } else if (allRuns.some(r => FAIL.has(r.conclusion))) {
+        ci_status = 'failure';
+      } else {
+        ci_status = 'success';
+      }
+    }
+
     return {
       status:            data.state,
       title:             data.title,
       approvals:         states.filter(s => s === 'APPROVED').length,
       changes_requested: states.some(s => s === 'CHANGES_REQUESTED'),
       merged:            !!data.merged_at,
+      ci_status,
       comment_count:     data.comments ?? 0,
       last_activity:     data.updated_at,
       last_checked:      now.toISOString(),
@@ -153,6 +176,8 @@ function conditionMet(item, newState, prevState) {
     if (cond === 'merged')             return newState.merged === true;
     if (cond === 'closed')             return newState.status === 'closed' && !newState.merged;
     if (cond === 'changes-requested')  return newState.changes_requested === true;
+    if (cond === 'ci-passed')          return newState.ci_status === 'success';
+    if (cond === 'ci-failed')          return newState.ci_status === 'failure';
     if (cond === 'new-comment')        return prevState != null && newState.comment_count > prevState.comment_count;
     if (cond === 'any')                return prevState != null && JSON.stringify(pick(newState)) !== JSON.stringify(pick(prevState));
   }

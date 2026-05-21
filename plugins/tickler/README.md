@@ -25,6 +25,8 @@ claude plugin install tickler
 /tickler add https://github.com/org/repo/pull/123 approved
 /tickler add https://github.com/org/repo/pull/123 merged
 /tickler add https://github.com/org/repo/pull/123 changes-requested
+/tickler add https://github.com/org/repo/pull/123 ci-passed
+/tickler add https://github.com/org/repo/pull/123 ci-failed
 /tickler add https://github.com/org/repo/pull/123 new-comment
 /tickler add https://github.com/org/repo/issues/456 closed
 /tickler add https://github.com/org/repo/issues/456 new-comment
@@ -57,9 +59,86 @@ config file and shows current settings.
 
 | Type | Conditions |
 |------|-----------|
-| GitHub PR | `approved`, `merged`, `closed`, `changes-requested`, `new-comment`, `any` |
+| GitHub PR | `approved`, `merged`, `closed`, `changes-requested`, `ci-passed`, `ci-failed`, `new-comment`, `any` |
 | GitHub Issue | `closed`, `new-comment`, `labeled:<label>`, `any` |
 | Jira | `status:<value>`, `new-comment`, `new-subtask`, `any` |
+
+## Recipes
+
+### Watch a PR → notify when approved
+
+```text
+/tickler add https://github.com/org/repo/pull/123 approved
+```
+
+Tickler notifies you when the PR gets its first approval. After that, snooze or remove it manually.
+
+---
+
+### Watch a PR → auto-merge when approved, then stop tracking
+
+```text
+/tickler add https://github.com/org/repo/pull/123 any
+```
+
+When prompted for actions, set:
+- When `approved` → `merge` (squash, confirm: true)
+- When `merged` → `remove_from_watch`
+
+tickler will ask for your approval before merging, then drop the item from the watch list automatically.
+
+---
+
+### Watch a PR → merge when CI passes
+
+```text
+/tickler add https://github.com/org/repo/pull/123 ci-passed
+```
+
+Actions:
+- When `ci-passed` → `merge` (squash, confirm: true)
+- When `merged` → `remove_from_watch`
+
+Tickler polls CI status and prompts you to merge once all checks go green.
+
+---
+
+### Watch a PR end-to-end: CI + approval → merge → Jira → stop
+
+```text
+/tickler add https://github.com/org/repo/pull/123 any
+```
+
+Actions:
+- When `ci-failed` → `slack_dm` body: "CI failed on PR #123"
+- When `approved` → `merge` (squash, confirm: true)
+- When `merged` → `jira_transition` to: Done
+- When `merged` → `remove_from_watch`
+
+---
+
+### Watch a GitHub issue → remove when closed
+
+```text
+/tickler add https://github.com/org/repo/issues/456 closed
+```
+
+Actions:
+- When `closed` → `remove_from_watch`
+
+Useful for issues you filed and want to forget about until they're resolved.
+
+---
+
+### Watch a Jira ticket → notify when done
+
+```text
+/tickler add PROJ-789 status:Done
+```
+
+Tickler notifies you when the ticket transitions to Done. Combine with `remove_from_watch` to auto-clean the list.
+
+---
 
 ## Actions
 

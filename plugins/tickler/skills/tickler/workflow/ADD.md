@@ -17,7 +17,7 @@ Parse the argument: `add <url-or-id> [condition]`
 ### Valid conditions by type
 
 - `github-pr`: `approved`, `merged`, `closed`, `changes-requested`,
-  `new-comment`, `any`
+  `ci-passed`, `ci-failed`, `new-comment`, `any`
 - `github-issue`: `closed`, `new-comment`, `labeled:<label>`, `any`
 - `jira`: `status:<value>` (e.g. `status:Done`), `new-comment`, `any`
 - If no condition given, default to `any`
