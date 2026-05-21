@@ -103,7 +103,7 @@ each action:
   [{ "url": "...", "label": "...", "do": "...", "on": "...", "args": {} }]
   ```
 
-**Tier-2 actions** (`run`, `slack_dm`) — always execute immediately
+**Tier-2 actions** (`run`, `slack_dm`, `interactive`) — always execute immediately
 (these are never subject to confirm, as they are themselves agentic):
 
 - `run`: dispatch an **Agent** with `args.cmd` (a slash command or multi-step
@@ -111,9 +111,25 @@ each action:
   single shell commands — it is far cheaper (no agent spawn).
 - `slack_dm`: use the Slack MCP `slack_send_message` tool to DM
   `slackUserId` with `args.body`.
+- `interactive`: do NOT execute. Write the item to
+  `<CLAUDE_PLUGIN_DATA>/interactive_pending.json` (append or create):
+  ```json
+  [{
+    "url": "<item-url>",
+    "label": "<item title from state>",
+    "on": "<triggering condition>",
+    "prompt": "<args.prompt>",
+    "options": <args.options or []>,
+    "context": <full newState object from CHECK_OUTPUT for this item>
+  }]
+  ```
+  Then call `append-fired-action` as normal. If `notify` is `"slack"`,
+  skip `interactive` actions with a logged warning — they only work in
+  `direct` mode.
 
 Track totals: `actions_fired` (executed this cycle),
-`actions_pending_confirm` (written to pending_actions.json).
+`actions_pending_confirm` (written to pending_actions.json),
+`interactive_pending` (written to interactive_pending.json).
 
 ### Step 4 — Auto-remove terminal items
 
@@ -142,5 +158,6 @@ notifications_sent: N
 items_removed: N
 actions_fired: N
 actions_pending_confirm: N
+interactive_pending: N
 changed_urls: <comma-separated URLs from changed[], or empty>
 ```
