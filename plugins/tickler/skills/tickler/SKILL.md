@@ -35,7 +35,7 @@ workflow/
 scripts/
   check.js               — fetch state + detect changes for all items (deterministic)
   notify.js              — script-path monitor: notify + tier-1 actions, no agent (qualifying cycles only)
-  adaptive-interval.js   — compute next check interval based on activity
+  adaptive-interval.js   — standalone adaptive-interval tool (logic now also built into check.js)
   actions.js             — execute tier-1 actions (merge, close, comment, jira_transition, remove_from_watch)
   fetch-github.js        — GitHub REST API fetcher (used by check.js)
   fetch-jira.js          — Jira REST API fetcher (used by check.js)
@@ -118,21 +118,13 @@ Parse `$ARGUMENTS` before doing anything else:
      --token <githubToken> \
      --jira-base-url <jiraBaseUrl> \
      --jira-email <jiraEmail> \
-     --jira-token <jiraToken>
-   ```
-   Parse output: `items_checked`, `changed[]`, `terminal_items[]`.
-   State is saved by `check.js` automatically.
-
-   Then compute the adaptive next interval:
-   ```bash
-   node $SKILL_SCRIPTS_DIR/scripts/adaptive-interval.js \
-     --data $CLAUDE_PLUGIN_DATA \
+     --jira-token <jiraToken> \
      --base <interval> \
-     [--min <intervalMin>] [--max <intervalMax>] \
-     --changed <1 if changed[] non-empty, else 0>
+     [--min <intervalMin>] [--max <intervalMax>]
    ```
-   Capture the printed integer as `next_interval`. Use it in step 6 instead of
-   the static `interval` config value.
+   Parse output: `items_checked`, `changed[]`, `terminal_items[]`, `next_interval`.
+   State and `changed_pending.json` are saved by `check.js` automatically.
+   Use `next_interval` from the output in step 6 instead of the static `interval` config value.
 
    **If `items_checked === 0`** (empty watch list): skip to step 6 (scheduling).
    Report `items_checked: 0`, all other counts 0.
@@ -160,9 +152,9 @@ Parse `$ARGUMENTS` before doing anything else:
    node $SKILL_SCRIPTS_DIR/scripts/notify.js \
      --data $CLAUDE_PLUGIN_DATA \
      --skill-dir $SKILL_SCRIPTS_DIR/scripts \
-     --changed '<compact JSON of changed[] array>' \
      [--jira-base-url <jiraBaseUrl>] [--jira-email <jiraEmail>] [--jira-token <jiraToken>]
    ```
+   notify.js reads `changed_pending.json` written by check.js and deletes it on completion.
    Parse MONITOR_SUMMARY from its stdout. Set `actions_pending_confirm: 0`
    and `interactive_pending: 0`.
 

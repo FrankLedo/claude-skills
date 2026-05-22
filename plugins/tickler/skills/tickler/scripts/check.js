@@ -5,15 +5,18 @@
  * Usage:
  *   node check.js --data <dir> [--token <githubToken>]
  *                 [--jira-base-url <url>] [--jira-email <email>] [--jira-token <token>]
+ *                 [--base <minutes>] [--min <minutes>] [--max <minutes>]
  *
  * Reads tickler.json from <dir>, fetches each non-snoozed item in parallel,
  * saves updated state back to tickler.json via state.js, and prints JSON to stdout:
  *   {
  *     "items_checked": N,
  *     "changed": [{ "url": "...", "condition": "...", "title": "..." }],
- *     "terminal_items": ["url", ...]   // merged/closed PRs + closed issues
+ *     "terminal_items": ["url", ...],   // merged/closed PRs + closed issues
+ *     "next_interval": N                // minutes until next check (adaptive)
  *   }
  *
+ * Also writes changed[] to <dir>/changed_pending.json for notify.js to consume.
  * Exits 0 always. Item-level errors are logged to stderr and the item is skipped.
  */
 
@@ -42,6 +45,11 @@ const githubToken = resolveToken(get('--token')         || '');
 const jiraBaseUrl =              get('--jira-base-url') || '';
 const jiraEmail   = resolveToken(get('--jira-email')    || '');
 const jiraToken   = resolveToken(get('--jira-token')    || '');
+
+// Adaptive interval config (optional — omit to skip next_interval computation)
+const baseInterval = get('--base') ? parseInt(get('--base'), 10) : null;
+const minInterval  = get('--min')  ? parseInt(get('--min'),  10) : null;
+const maxInterval  = get('--max')  ? parseInt(get('--max'),  10) : null;
 
 if (!dataDir) { console.error('Missing --data'); process.exit(1); }
 
@@ -301,11 +309,55 @@ async function main() {
     );
   }
 
-  console.log(JSON.stringify({
+  // Write changed[] to a temp file so notify.js can read it without shell-escaping risks
+  const pendingPath = path.join(dataDir, 'changed_pending.json');
+  if (changed.length > 0) {
+    const tmp = pendingPath + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(changed) + '\n', 'utf8');
+    fs.renameSync(tmp, pendingPath);
+  } else {
+    try { fs.unlinkSync(pendingPath); } catch { /* not present, fine */ }
+  }
+
+  // Compute next_interval using adaptive logic (only if --base was supplied)
+  let next_interval = baseInterval;
+  if (baseInterval !== null) {
+    const base   = baseInterval;
+    const minInt = minInterval  ?? Math.max(15, Math.round(base / 2));
+    const maxInt = maxInterval  ?? base * 2;
+    const aiPath = path.join(dataDir, 'adaptive_interval.json');
+
+    let aiState = { burst_remaining: 0, current_interval: base };
+    try { aiState = JSON.parse(fs.readFileSync(aiPath, 'utf8')); } catch { /* first run */ }
+
+    const hasChange = changed.length > 0;
+    if (hasChange) {
+      aiState.burst_remaining  = 2;
+      aiState.current_interval = minInt;
+      next_interval = minInt;
+    } else if (aiState.burst_remaining > 0) {
+      aiState.burst_remaining -= 1;
+      aiState.current_interval = minInt;
+      next_interval = minInt;
+    } else {
+      const ramped = Math.max(1, Math.round(aiState.current_interval * 1.5 / 5) * 5);
+      next_interval = Math.min(maxInt, ramped);
+      aiState.current_interval = next_interval;
+    }
+
+    const aiTmp = aiPath + '.tmp';
+    fs.writeFileSync(aiTmp, JSON.stringify(aiState) + '\n', 'utf8');
+    fs.renameSync(aiTmp, aiPath);
+  }
+
+  const output = {
     items_checked: results.filter(r => !r.error).length,
     changed,
     terminal_items,
-  }, null, 2));
+  };
+  if (next_interval !== null) output.next_interval = next_interval;
+
+  console.log(JSON.stringify(output, null, 2));
 }
 
 main().catch(err => {
