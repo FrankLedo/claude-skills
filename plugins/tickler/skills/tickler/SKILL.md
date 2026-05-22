@@ -83,12 +83,16 @@ Parse `$ARGUMENTS` before doing anything else:
 | `remove <url>` | Read `workflow/ADD.md` → remove item |
 | `list` | Read `workflow/ADD.md` → list items |
 | `config` | Resolve `${CLAUDE_PLUGIN_DATA}` and print the full path to `CLAUDE.md`, then show current config values |
-| `stop` | Cancel scheduled cron, confirm to user |
+| `stop` | Write `stopped` sentinel to `${CLAUDE_PLUGIN_DATA}/stopped`, confirm to user that tickler will stop after its next scheduled wakeup |
 | *(none)* | Run a check cycle (see below) |
 
 ## Check Cycle (no-arg invocation)
 
-1. **Read** `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` — parse YAML frontmatter only.
+1. **Stop check** — if `${CLAUDE_PLUGIN_DATA}/stopped` exists, delete it and
+   output "Tickler stopped. Run `/tickler` to resume." Do not schedule another
+   wakeup. Exit.
+
+   **Read** `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` — parse YAML frontmatter only.
    If missing, run setup.
 
    **Migration check** — if `notifyInput` is absent from the frontmatter (existing
@@ -249,26 +253,23 @@ Parse `$ARGUMENTS` before doing anything else:
 
     After all items handled: delete `interactive_pending.json`.
 
-6. **Schedule next run** using `CronList` then `CronCreate`.
-   Use `next_interval` (from the adaptive-interval.js call in step 3) as the
-   interval value. If step 3 was skipped (empty watch list), use `interval` from config.
+6. **Schedule next run** using `ScheduleWakeup`. The session ends after this
+   turn and goes dormant until the wakeup fires — no persistent "Working" state.
+
+   Use `next_interval` (from adaptive-interval.js) as the delay. If step 3 was
+   skipped (empty watch list), use `interval` from config.
    - If step 3 returned `items_checked === 0` (empty list), run
      `date -u +"%Y-%m-%dT%H:%M:%SZ" && date +"%H %u"` to get
      `local_hour` and `local_dow` now — do NOT estimate
    - Outside work hours (`local_hour >= endHour` or `local_hour < startHour`
      or `local_dow` outside `days`):
-     → one-shot cron for `startHour:03` on next active day
-   - Within work hours — drift-aware scheduling:
-     1. Run `CronList` and look for an existing recurring tickler cron.
-     2. If one exists, compute minutes until its next fire relative to
-        `current_time`. If that gap is less than `next_interval - 10` minutes,
-        the current run was late and the next fire is too soon — cancel with
-        `CronDelete` and create a fresh recurring cron at `next_interval` minutes
-        anchored to now.
-     3. If the gap is ≥ `next_interval - 10` minutes, the schedule is healthy —
-        leave the existing cron in place (skip CronCreate).
-     4. If no existing cron is found, create a new recurring cron at
-        `next_interval` minutes.
+     → `ScheduleWakeup(delaySeconds: 3600, prompt: "/tickler:tickler", reason: "tickler out-of-hours check")`
+     (Will re-check next hour; if still outside hours, reschedule again.)
+   - Within work hours:
+     → `ScheduleWakeup(delaySeconds: min(next_interval * 60, 3600), prompt: "/tickler:tickler", reason: "tickler check")`
+
+   No `CronList`, `CronCreate`, or `CronDelete` calls needed — `ScheduleWakeup`
+   always anchors to now, so drift is corrected automatically each cycle.
 
 7. **Report** to user:
    - items_checked, items_changed, notifications_sent, items_removed,
