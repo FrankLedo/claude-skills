@@ -17,6 +17,24 @@ Then install tickler:
 claude plugin install tickler
 ```
 
+## Getting Started
+
+After installing, run the setup wizard once to configure tickler:
+
+```text
+/tickler setup
+```
+
+The wizard walks you through:
+
+1. **Notification method** — `direct` (messages appear in your terminal) or `slack` (DMs to yourself)
+2. **Work hours** — tickler stays quiet outside these hours
+3. **Polling interval** — how often to check (default: 5 minutes)
+4. **GitHub credentials** — uses the GitHub MCP server if you have it; otherwise prompts for a `GITHUB_TOKEN`
+5. **Jira credentials** — optional; only needed if you watch Jira tickets
+
+Setup writes a config file and an empty watch list. After that, tickler starts its background monitor and you're ready to add watches.
+
 ## Usage
 
 ### Add a watch
@@ -81,11 +99,11 @@ Tickler notifies you when the PR gets its first approval. After that, snooze or 
 /tickler add https://github.com/org/repo/pull/123 any
 ```
 
-When prompted for actions, set:
-- When `approved` → `merge` (squash, confirm: true)
-- When `merged` → `remove_from_watch`
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
 
-tickler will ask for your approval before merging, then drop the item from the watch list automatically.
+> When approved, merge it (squash). Ask me first. When merged, remove it from the watch list.
+
+Tickler will ask for your approval before merging, then drop the item from the watch list automatically.
 
 ---
 
@@ -95,9 +113,9 @@ tickler will ask for your approval before merging, then drop the item from the w
 /tickler add https://github.com/org/repo/pull/123 ci-passed
 ```
 
-Actions:
-- When `ci-passed` → `merge` (squash, confirm: true)
-- When `merged` → `remove_from_watch`
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
+
+> When CI passes, merge it (squash). Ask me first. When merged, remove it from the watch list.
 
 Tickler polls CI status and prompts you to merge once all checks go green.
 
@@ -109,11 +127,9 @@ Tickler polls CI status and prompts you to merge once all checks go green.
 /tickler add https://github.com/org/repo/pull/123 any
 ```
 
-Actions:
-- When `ci-failed` → `slack_dm` body: "CI failed on PR #123"
-- When `approved` → `merge` (squash, confirm: true)
-- When `merged` → `jira_transition` to: Done
-- When `merged` → `remove_from_watch`
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
+
+> When CI fails, DM me on Slack: "CI failed on PR #123". When approved, merge it (squash). Ask me first. When merged, transition the Jira ticket to Done and remove it from the watch list.
 
 ---
 
@@ -123,8 +139,9 @@ Actions:
 /tickler add https://github.com/org/repo/issues/456 closed
 ```
 
-Actions:
-- When `closed` → `remove_from_watch`
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
+
+> When closed, remove it from the watch list.
 
 Useful for issues you filed and want to forget about until they're resolved.
 
@@ -136,7 +153,7 @@ Useful for issues you filed and want to forget about until they're resolved.
 /tickler add PROJ-789 status:Done
 ```
 
-Tickler notifies you when the ticket transitions to Done. Combine with `remove_from_watch` to auto-clean the list.
+Tickler notifies you when the ticket transitions to Done. When adding, you can also tell it to remove it from the watch list automatically on that transition.
 
 ---
 
@@ -146,13 +163,11 @@ Tickler notifies you when the ticket transitions to Done. Combine with `remove_f
 /tickler add https://github.com/org/repo/pull/123 any
 ```
 
-Actions:
-- When `ci-passed` → `shell` cmd: `gh pr ready https://github.com/org/repo/pull/123`
-- When `approved` → `merge` (squash, confirm: true)
-- When `merged` → `jira_transition` to: In Review
-- When `merged` → `remove_from_watch`
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
 
-CI going green promotes the draft, a reviewer approves it, tickler asks you to confirm the merge, then closes the Jira ticket and cleans up — all from a single watch.
+> When CI passes, run this shell command: `gh pr ready https://github.com/org/repo/pull/123`. When approved, merge it (squash). Ask me first. When merged, transition the Jira ticket to In Review and remove it from the watch list.
+
+CI going green promotes the draft, a reviewer approves it, tickler asks you to confirm the merge, then updates the Jira ticket and cleans up — all from a single watch.
 
 ---
 
@@ -162,13 +177,11 @@ CI going green promotes the draft, a reviewer approves it, tickler asks you to c
 /tickler add https://github.com/org/repo/pull/123 any
 ```
 
-Actions:
-- When `changes-requested` → `comment` body: "Addressed the review comments, please take another look."
-- When `changes-requested` → `shell` cmd: `gh pr edit https://github.com/org/repo/pull/123 --add-label "needs-review"`
-- When `approved` → `merge` (squash, confirm: true)
-- When `merged` → `remove_from_watch`
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
 
-Multiple actions can share the same `on` trigger — they all fire in order.
+> When changes are requested, post a comment: "Addressed the review comments, please take another look." Also when changes are requested, run this shell command: `gh pr edit https://github.com/org/repo/pull/123 --add-label "needs-review"`. When approved, merge it (squash). Ask me first. When merged, remove it from the watch list.
+
+Multiple actions can share the same trigger — they all fire in order.
 
 ---
 
@@ -178,10 +191,9 @@ Multiple actions can share the same `on` trigger — they all fire in order.
 /tickler add https://github.com/org/repo/pull/456 any
 ```
 
-Actions:
-- When `ci-passed` → `merge` (squash, confirm: false)
-- When `ci-failed` → `close`
-- When `merged` → `remove_from_watch`
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
+
+> When CI passes, merge automatically — no confirmation needed. When CI fails, close the PR automatically. When merged, remove it from the watch list.
 
 Fully automated dependency merging — no human in the loop unless something goes wrong.
 
@@ -193,10 +205,9 @@ Fully automated dependency merging — no human in the loop unless something goe
 /tickler add https://github.com/org/repo/pull/123 ci-failed
 ```
 
-When prompted for actions, set:
-- When `ci-failed` → `interactive`, prompt: "CI failed — how do you want to respond?", options:
-  - Post a comment (`comment`, body: "CI failed — investigating")
-  - Close PR (`close`)
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
+
+> When CI fails, show me an interactive menu asking "CI failed — how do you want to respond?" with options: post a comment saying "CI failed — investigating", or close the PR.
 
 When CI fails, tickler presents the menu and waits for your input. Choose an option or say anything — tickler enters a free-form conversation with full PR context loaded.
 
@@ -204,8 +215,9 @@ When CI fails, tickler presents the menu and waits for your input. Choose an opt
 
 ## Actions
 
-Items can carry an `actions[]` array that fires verbs when a condition triggers.
-The `/tickler add` command will offer to set these up interactively.
+Every `/tickler add` command ends with: **"Would you like to add any actions?"** Just describe what you want in plain English — tickler translates it into the right configuration. You can say things like "when approved, merge it and ask me first" or "when CI fails, DM me on Slack."
+
+Under the hood, actions are stored as a JSON array on the watched item:
 
 ```json
 {
