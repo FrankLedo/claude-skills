@@ -1,5 +1,6 @@
 ---
 notify: direct
+notifyInput: push
 slackUserId: ""
 workHours:
   start: 8
@@ -23,7 +24,8 @@ to configure, and add notes or type definitions below as you use the skill.
 
 ## Configuration Reference
 
-- **notify** — `direct` (print to terminal) or `slack` (DM to self)
+- **notify** — `direct` (print to terminal) or `slack` (DM to self; note: Slack self-DMs are not highlighted)
+- **notifyInput** — how to alert you when tickler needs your input (confirm a merge, choose an action): `push` (recommended — system notification + Remote Control), `none` (silent wait)
 - **slackUserId** — Your Slack user ID; required if `notify` is `slack`
 - **workHours.start / end** — Active hours in local time (0–23)
 - **workHours.days** — Active days, 1=Mon 7=Sun (default `1-5`)
