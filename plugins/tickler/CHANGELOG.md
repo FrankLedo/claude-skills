@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.11](https://github.com/FrankLedo/claude-skills/compare/v0.3.10...v0.3.11) (2026-05-22)
+
+
+### Bug Fixes
+
+* **tickler:** reduce monitor agent token overhead — closes [#94](https://github.com/FrankLedo/claude-skills/issues/94), [#95](https://github.com/FrankLedo/claude-skills/issues/95), [#96](https://github.com/FrankLedo/claude-skills/issues/96) ([#97](https://github.com/FrankLedo/claude-skills/issues/97)) ([b35a0da](https://github.com/FrankLedo/claude-skills/commit/b35a0da81e07ba2b2b1bd3d8ff9fc57e2721d242))
+
 ## [0.3.10](https://github.com/FrankLedo/claude-skills/compare/v0.3.9...v0.3.10) (2026-05-21)
 
 
