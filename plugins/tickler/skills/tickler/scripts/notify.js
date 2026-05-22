@@ -3,8 +3,11 @@
  * Script-based monitor cycle for qualifying notify-only cycles.
  *
  * Usage:
- *   node notify.js --data <dir> --skill-dir <scripts-dir> --changed '<JSON>'
+ *   node notify.js --data <dir> --skill-dir <scripts-dir>
  *                  [--jira-base-url <url>] [--jira-email <email>] [--jira-token <token>]
+ *
+ * Reads changed items from <dir>/changed_pending.json (written by check.js).
+ * Deletes the file after processing.
  *
  * Qualifications (enforced by parent SKILL.md before calling this script):
  *   - notify === "direct"
@@ -17,6 +20,7 @@
 
 'use strict';
 
+const fs           = require('fs');
 const { execSync } = require('child_process');
 const path = require('path');
 
@@ -27,13 +31,21 @@ const get  = flag => { const i = argv.indexOf(flag); return i !== -1 ? argv[i + 
 
 const dataDir     = get('--data');
 const skillDir    = get('--skill-dir');
-const changedRaw  = get('--changed');
 const jiraBaseUrl = get('--jira-base-url') || '';
 const jiraEmail   = get('--jira-email')    || '';
 const jiraToken   = get('--jira-token')    || '';
 
-if (!dataDir || !skillDir || !changedRaw) {
-  process.stderr.write('Missing --data, --skill-dir, or --changed\n');
+if (!dataDir || !skillDir) {
+  process.stderr.write('Missing --data or --skill-dir\n');
+  process.exit(1);
+}
+
+const pendingPath = path.join(dataDir, 'changed_pending.json');
+let changedRaw;
+try {
+  changedRaw = fs.readFileSync(pendingPath, 'utf8');
+} catch {
+  process.stderr.write(`changed_pending.json not found at ${pendingPath}\n`);
   process.exit(1);
 }
 
@@ -111,6 +123,8 @@ for (const entry of changed) {
     }
   }
 }
+
+try { fs.unlinkSync(pendingPath); } catch { /* already gone */ }
 
 process.stdout.write('\nMONITOR_SUMMARY\n');
 process.stdout.write(`notifications_sent: ${notifications_sent}\n`);
