@@ -8,6 +8,26 @@ The workaround column explains how tickler handles it today.
 
 ## Scheduling
 
+### Session context grows unboundedly across wakeup cycles
+
+**Upstream:** [anthropics/claude-code#50920](https://github.com/anthropics/claude-code/issues/50920)
+
+`ScheduleWakeup` re-fires into the same session. As the session accumulates
+turns across many cycles, every subsequent cycle pays input tokens for the full
+conversation history — even though prior turns are irrelevant to the check.
+autoCompact does not fire on the scheduled-wakeup path, so there is no
+automatic relief.
+
+**Workaround:** `check.js` tracks a `cycle_count` in `adaptive_interval.json`.
+SKILL.md includes a `/compact` reminder in the step 7 report every 10 cycles,
+prompting the user to trim history manually. This is advisory only — it doesn't
+prevent context growth between reminders.
+
+**If fixed:** autoCompact firing on wakeup cycles (or a `fresh_context` option
+on `ScheduleWakeup`) would cap per-cycle cost regardless of session age.
+
+---
+
 ### Out-of-hours sleep requires hourly wakeups
 
 **Upstream:** [anthropics/claude-code#61522](https://github.com/anthropics/claude-code/issues/61522)

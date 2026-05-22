@@ -327,8 +327,9 @@ async function main() {
     const maxInt = maxInterval  ?? base * 2;
     const aiPath = path.join(dataDir, 'adaptive_interval.json');
 
-    let aiState = { burst_remaining: 0, current_interval: base };
+    let aiState = { burst_remaining: 0, current_interval: base, cycle_count: 0 };
     try { aiState = JSON.parse(fs.readFileSync(aiPath, 'utf8')); } catch { /* first run */ }
+    aiState.cycle_count = (aiState.cycle_count || 0) + 1;
 
     const hasChange = changed.length > 0;
     if (hasChange) {
@@ -356,6 +357,10 @@ async function main() {
     terminal_items,
   };
   if (next_interval !== null) output.next_interval = next_interval;
+  if (baseInterval !== null) {
+    const aiPath  = path.join(dataDir, 'adaptive_interval.json');
+    try { output.cycle_count = JSON.parse(fs.readFileSync(aiPath, 'utf8')).cycle_count || 0; } catch { /* ok */ }
+  }
 
   console.log(JSON.stringify(output, null, 2));
 }
