@@ -120,22 +120,31 @@ Parse `$ARGUMENTS` before doing anything else:
    **If `items_checked === 0`** (empty watch list): skip to step 6 (scheduling).
    Report `items_checked: 0`, all other counts 0.
 
-4. **If `changed` is empty AND `terminal_items` is empty**: no agent needed.
-   Skip to step 6. Report `items_checked: N`, `items_changed: 0`, all others 0.
+4. **If `changed` is empty**: no agent needed.
+   If `terminal_items` is non-empty and `autoRemoveTerminal` is `true`, remove
+   each one directly — no agent spawn required:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/state.js remove-item \
+     --data $CLAUDE_PLUGIN_DATA "<url>"
+   ```
+   Set `items_removed` to the count removed. Skip to step 6.
+   Report `items_checked: N`, `items_changed: 0`, `items_removed: N`, all others 0.
 
 5. **Changes detected** — **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`,
    then **Dispatch Agent** (`model: haiku`) with the monitor prompt. Pass as
    part of the prompt text:
    - `SKILL_SCRIPTS_DIR=<resolved path>`
    - `CLAUDE_PLUGIN_DATA=<resolved path>`
-   - All config values from CLAUDE.md frontmatter
+   - `notify=<value>` and `autoRemoveTerminal=<value>` from config
+   - `slackUserId=<value>` (if notify is "slack")
+   - `jiraBaseUrl`, `jiraEmail`, `jiraToken` (if non-empty)
    - `current_time=<ISO 8601 UTC timestamp>`
-   - `local_hour=<N>`, `local_dow=<N>`
-   - `CHECK_OUTPUT=<full JSON string from check.js>`
+   - `CHANGED_ITEMS=<changed[] array as compact JSON string>`
 
-   Receive `MONITOR_SUMMARY` from the agent. Parse `items_checked`,
-   `items_changed`, `notifications_sent`, `items_removed`, `actions_fired`,
-   `actions_pending_confirm`, `interactive_pending`, and `changed_urls` from it.
+   Receive `MONITOR_SUMMARY` from the agent. Parse `notifications_sent`,
+   `actions_fired`, `actions_pending_confirm`, `interactive_pending`,
+   and `changed_urls` from it. Use `changed[].length` for `items_changed`
+   and `terminal_items` handled in step 4 for `items_removed`.
 
 5a. If `openInBrowser: true` in config and `changed_urls` is non-empty,
     open each URL in the browser — one separate Bash call per URL:
