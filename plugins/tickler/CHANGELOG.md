@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0](https://github.com/FrankLedo/claude-skills/compare/v0.3.12...v0.4.0) (2026-05-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **tickler:** replace CronCreate with ScheduleWakeup — eliminates perpetual Working state ([#104](https://github.com/FrankLedo/claude-skills/issues/104))
+
+### Features
+
+* **tickler:** replace CronCreate with ScheduleWakeup — eliminates perpetual Working state ([#104](https://github.com/FrankLedo/claude-skills/issues/104)) ([f766d9a](https://github.com/FrankLedo/claude-skills/commit/f766d9a5b739af3eb1e5a95257ed96307a221c64))
+
 ## [0.3.12](https://github.com/FrankLedo/claude-skills/compare/v0.3.11...v0.3.12) (2026-05-22)
 
 
