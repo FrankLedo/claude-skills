@@ -9,10 +9,20 @@ Use `AskUserQuestion`:
 
 > "How should tickler notify you when something changes?"
 > - `direct` — print to the terminal (works anywhere)
-> - `slack` — send a DM to yourself on Slack (requires Slack MCP)
+> - `slack` — send a DM to yourself on Slack (requires Slack MCP; note: Slack self-DMs are not highlighted)
 
 If `slack`, ask: "What is your Slack user ID? (Profile → More →
 Copy member ID)"
+
+### Step 1b — Input alert method
+
+Use `AskUserQuestion`:
+
+> "When tickler needs your input — like confirming a merge or choosing an action — how should it alert you?"
+> - `push` **(Recommended)** — system desktop notification; also pushes to your phone if Remote Control is connected
+> - `none` — no alert; tickler waits silently in the agents view
+
+Set `notifyInput` to the chosen value.
 
 ### Step 2 — Work hours
 

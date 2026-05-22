@@ -50,6 +50,7 @@ Config lives in the YAML frontmatter of `${CLAUDE_PLUGIN_DATA}/CLAUDE.md`,
 which is auto-loaded as context. Key fields:
 
 - `notify`: `"direct"` (print to terminal) or `"slack"` (DM to self)
+- `notifyInput`: `"push"` (system notification + Remote Control push) or `"none"` (silent wait) — how to alert when tickler needs your input. Default: `"push"`.
 - `slackUserId`: required if `notify` is `"slack"` — your Slack user ID
 - `startHour`: work hours start, 0–23, user's local time (default `8`)
 - `endHour`: work hours end, 0–23, user's local time (default `18`)
@@ -88,6 +89,17 @@ Parse `$ARGUMENTS` before doing anything else:
 
 1. **Read** `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` — parse YAML frontmatter only.
    If missing, run setup.
+
+   **Migration check** — if `notifyInput` is absent from the frontmatter (existing
+   install, not set during original setup), prompt once with `AskUserQuestion`:
+   > "tickler has a new setting: when it needs your input (e.g. to confirm a merge),
+   > how should it alert you?"
+   > - `push` **(Recommended)** — system notification + Remote Control push
+   > - `none` — no alert; tickler waits silently
+
+   Save the chosen value by adding `notifyInput: <value>` to the YAML frontmatter
+   of `${CLAUDE_PLUGIN_DATA}/CLAUDE.md` (read the file, insert the line after
+   `notify:`, rewrite with the Write tool). Then continue the check cycle.
 
 2. Run `date -u +"%Y-%m-%dT%H:%M:%SZ" && date +"%H %u"` via Bash to get
    the actual `current_time` (UTC ISO 8601), `local_hour` (0–23), and
@@ -154,8 +166,11 @@ Parse `$ARGUMENTS` before doing anything else:
     ```
     (Multi-arg `open` causes blank pages on macOS; one call per URL is required.)
 
-5b. If `actions_pending_confirm` > 0, **Read**
-    `${CLAUDE_PLUGIN_DATA}/pending_actions.json`. For each action, use
+5b. If `actions_pending_confirm` > 0, and `notifyInput` is `"push"`, fire
+    `PushNotification` with `message: "tickler: [N] action(s) need your approval"`,
+    `status: "proactive"` before presenting questions.
+
+    **Read** `${CLAUDE_PLUGIN_DATA}/pending_actions.json`. For each action, use
     `AskUserQuestion` to prompt the user before firing:
     > "[label] — [url] triggered '[on]'. Execute '[do]'?"
     - Yes → call `actions.js` with the action's verb and args (same invocation
@@ -163,8 +178,12 @@ Parse `$ARGUMENTS` before doing anything else:
       `pending_actions.json`.
     - No → remove the item from `pending_actions.json` without executing.
 
-5c. If `interactive_pending` > 0, **Read**
-    `${CLAUDE_PLUGIN_DATA}/interactive_pending.json`. For each item, run
+5c. If `interactive_pending` > 0, and `notifyInput` is `"push"`, fire
+    `PushNotification` once (before the first item) with
+    `message: "tickler: [item.label] needs your input"` (use first item's label),
+    `status: "proactive"`.
+
+    **Read** `${CLAUDE_PLUGIN_DATA}/interactive_pending.json`. For each item, run
     this loop until the user dismisses:
 
     **Present** `AskUserQuestion` with:
