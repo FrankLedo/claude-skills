@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/FrankLedo/claude-skills/compare/v0.4.0...v0.4.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* **tickler:** fold adaptive-interval into check.js, pass changed[] via temp file, fix syntax error ([#108](https://github.com/FrankLedo/claude-skills/issues/108)) ([67a296d](https://github.com/FrankLedo/claude-skills/commit/67a296d1f5a3bf110a857e7d874c2892e5424b4a))
+
 ## [0.4.0](https://github.com/FrankLedo/claude-skills/compare/v0.3.12...v0.4.0) (2026-05-22)
 
 
