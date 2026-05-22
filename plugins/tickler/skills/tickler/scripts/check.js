@@ -10,7 +10,7 @@
  * saves updated state back to tickler.json via state.js, and prints JSON to stdout:
  *   {
  *     "items_checked": N,
- *     "changed": [{ "url": "...", "condition": "..." }],
+ *     "changed": [{ "url": "...", "condition": "...", "title": "..." }],
  *     "terminal_items": ["url", ...]   // merged/closed PRs + closed issues
  *   }
  *
@@ -266,7 +266,11 @@ async function main() {
 
     if (conditionMet(item, newState, item.state)) {
       const triggeredCond = item.condition || 'any';
-      const entry = { url: item.url, condition: triggeredCond };
+      const entry = {
+        url:       item.url,
+        condition: triggeredCond,
+        title:     newState.title || newState.summary || '',
+      };
 
       if (triggeredCond === 'new-subtask') {
         const prevKeys = new Set((item.state.subtasks || []).map(st => st.key));
