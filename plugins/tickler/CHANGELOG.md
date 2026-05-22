@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/FrankLedo/claude-skills/compare/v0.4.1...v0.4.2) (2026-05-22)
+
+
+### Bug Fixes
+
+* **tickler:** track cycle_count, suggest /compact every 10 cycles to manage context growth ([#112](https://github.com/FrankLedo/claude-skills/issues/112)) ([9d85eca](https://github.com/FrankLedo/claude-skills/commit/9d85ecaad7fde00868727346a8b6d1355c39dd9a))
+
 ## [0.4.1](https://github.com/FrankLedo/claude-skills/compare/v0.4.0...v0.4.1) (2026-05-22)
 
 
