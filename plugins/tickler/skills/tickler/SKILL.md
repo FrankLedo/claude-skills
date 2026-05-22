@@ -267,6 +267,9 @@ Parse `$ARGUMENTS` before doing anything else:
    - items_checked, items_changed, notifications_sent, items_removed,
      actions_fired (from MONITOR_SUMMARY)
    - Next run scheduled for: `<time>`
+   - If `cycle_count` from check.js output is a non-zero multiple of 10,
+     append: "💡 Tip: Run `/compact` to trim session history and keep
+     per-cycle token cost low (this session has run `cycle_count` cycles)."
 
 ## Gotchas
 
