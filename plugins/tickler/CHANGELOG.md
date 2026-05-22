@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.12](https://github.com/FrankLedo/claude-skills/compare/v0.3.11...v0.3.12) (2026-05-22)
+
+
+### Features
+
+* **tickler:** add notify.js script path — eliminate agent for qualifying cycles ([#102](https://github.com/FrankLedo/claude-skills/issues/102)) ([66af9bc](https://github.com/FrankLedo/claude-skills/commit/66af9bc84a598c0c9484061566c7afaacc3b4c3d))
+* **tickler:** add notifyInput setting for push alerts when input is needed ([#99](https://github.com/FrankLedo/claude-skills/issues/99)) ([c70bfea](https://github.com/FrankLedo/claude-skills/commit/c70bfea154ec685c570103de4583a2171e3abc28))
+
 ## [0.3.11](https://github.com/FrankLedo/claude-skills/compare/v0.3.10...v0.3.11) (2026-05-22)
 
 
