@@ -34,6 +34,7 @@ workflow/
   FORMATS.md     — tickler.json and state.json schemas
 scripts/
   check.js               — fetch state + detect changes for all items (deterministic)
+  notify.js              — script-path monitor: notify + tier-1 actions, no agent (qualifying cycles only)
   adaptive-interval.js   — compute next check interval based on activity
   actions.js             — execute tier-1 actions (merge, close, comment, jira_transition, remove_from_watch)
   fetch-github.js        — GitHub REST API fetcher (used by check.js)
@@ -142,7 +143,27 @@ Parse `$ARGUMENTS` before doing anything else:
    Set `items_removed` to the count removed. Skip to step 6.
    Report `items_checked: N`, `items_changed: 0`, `items_removed: N`, all others 0.
 
-5. **Changes detected** — **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`,
+5. **Changes detected** — choose script path or agent path:
+
+   **Use script path** when ALL of these are true:
+   - `notify === "direct"`
+   - No `pending_actions` entry across any changed item has `do` equal to
+     `"run"`, `"slack_dm"`, or `"interactive"`
+   - No `pending_actions` entry has `confirm: true`
+
+   **Script path** — run `notify.js` directly (no agent spawned):
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/notify.js \
+     --data $CLAUDE_PLUGIN_DATA \
+     --skill-dir $SKILL_SCRIPTS_DIR/scripts \
+     --changed '<compact JSON of changed[] array>' \
+     [--jira-base-url <jiraBaseUrl>] [--jira-email <jiraEmail>] [--jira-token <jiraToken>]
+   ```
+   Parse MONITOR_SUMMARY from its stdout. Set `actions_pending_confirm: 0`
+   and `interactive_pending: 0`.
+
+   **Agent path** (Slack, `run`/`interactive`/`confirm` actions) —
+   **Read** `$SKILL_SCRIPTS_DIR/agents/monitor-prompt.md`,
    then **Dispatch Agent** (`model: haiku`) with the monitor prompt. Pass as
    part of the prompt text:
    - `SKILL_SCRIPTS_DIR=<resolved path>`
