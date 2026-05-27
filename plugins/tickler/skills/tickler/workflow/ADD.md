@@ -80,6 +80,12 @@ Parse the argument: `add <url-or-id> [condition]`
    | `shell` | Runs `args.cmd` directly via execSync — no agent spawned (use for single shell commands like `gh pr ready`) | `false` |
    | `slack_dm` | DMs `args.body` to the configured slackUserId | `false` |
    | `interactive` | Presents a menu + free-form conversation loop to the user (direct mode only); `args.prompt` required, `args.options[]` optional | N/A |
+   | `todoist_close` | Marks a Todoist task complete; `args.task` = task name or numeric ID | `false` |
+   | `todoist_create` | Creates a new Todoist task; `args.title` required, `args.due` (natural language or ISO date) and `args.project` optional | `false` |
+   | `todoist_comment` | Adds a comment to a Todoist task; `args.task` = task name or numeric ID, `args.body` required | `false` |
+
+   For Todoist verb details and MCP tool mapping, **Read**
+   `$SKILL_SCRIPTS_DIR/agents/todoist-prompt.md`.
 
    If the user declines or says "no actions", skip to step 4 with an empty actions array.
 

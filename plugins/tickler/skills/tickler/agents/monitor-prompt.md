@@ -104,6 +104,26 @@ each action:
   Then call `append-fired-action` as normal. Skip `interactive` actions when
   `notify` is `"slack"` (they only work in direct mode).
 
+**Todoist actions** (`todoist_close`, `todoist_create`, `todoist_comment`) —
+if any `pending_actions` entry has a `do` starting with `todoist_`, collect
+all such actions across all changed items into an array and dispatch a Haiku
+sub-Agent with the contents of `<SKILL_SCRIPTS_DIR>/agents/todoist-prompt.md`
+as the prompt. Inject as literal strings at the top of that prompt:
+
+```
+TODOIST_ACTIONS=<compact JSON: [{ "do": "...", "args": {...} }, ...]>
+current_time=<current_time>
+```
+
+Parse `TODOIST_SUMMARY` from the agent output. Add the `actions_fired` value
+to the running total. Then for each collected Todoist action, call
+`append-fired-action` to prevent re-firing:
+
+```bash
+node <SKILL_SCRIPTS_DIR>/scripts/state.js append-fired-action \
+  --data <CLAUDE_PLUGIN_DATA> '<item-url>' '<on>:<do>'
+```
+
 Track totals: `actions_fired`, `actions_pending_confirm`, `interactive_pending`.
 
 NOTE: Terminal item removal and scheduling are handled by the parent — do not
