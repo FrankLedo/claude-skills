@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/FrankLedo/claude-skills/compare/v0.4.2...v0.4.3) (2026-05-27)
+
+
+### Features
+
+* **tickler:** add Todoist actions via isolated Haiku sub-agent ([#114](https://github.com/FrankLedo/claude-skills/issues/114)) ([71d6238](https://github.com/FrankLedo/claude-skills/commit/71d6238ae028e7e01c18a2f05e5e7c9d6f7d0476))
+
 ## [0.4.2](https://github.com/FrankLedo/claude-skills/compare/v0.4.1...v0.4.2) (2026-05-22)
 
 
