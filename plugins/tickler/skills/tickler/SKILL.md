@@ -144,7 +144,7 @@ Parse `$ARGUMENTS` before doing anything else:
    **Use script path** when ALL of these are true:
    - `notify === "direct"`
    - No `pending_actions` entry across any changed item has `do` equal to
-     `"run"`, `"slack_dm"`, or `"interactive"`
+     `"run"`, `"slack_dm"`, or `"interactive"`, or starting with `"todoist_"`
    - No `pending_actions` entry has `confirm: true`
 
    **Script path** — run `notify.js` directly (no agent spawned):

@@ -242,8 +242,51 @@ Under the hood, actions are stored as a JSON array on the watched item:
 | `shell` | Runs `args.cmd` directly — no agent spawned; use for single shell commands (e.g. `gh pr ready`) | `false` |
 | `slack_dm` | DMs `args.body` to your configured Slack user | `false` |
 | `interactive` | Presents a menu + free-form conversation when triggered (`args.prompt` required, `args.options[]` optional; direct mode only) | N/A |
+| `todoist_close` | Marks a Todoist task complete; `args.task` = task name or numeric ID | `false` |
+| `todoist_create` | Creates a new Todoist task; `args.title` required, `args.due` and `args.project` optional | `false` |
+| `todoist_comment` | Adds a comment to a Todoist task; `args.task` = task name or ID, `args.body` required | `false` |
 
 Actions with `confirm: true` are held until you approve them — tickler will prompt you before firing. Actions are idempotent: once a `on:do` pair fires successfully it won't re-fire even if the condition is re-observed.
+
+Todoist actions require the [Todoist MCP server](https://github.com/Doist/todoist-mcp) to be installed and configured.
+
+---
+
+### PR merged → complete a Todoist task
+
+```text
+/tickler add https://github.com/org/repo/pull/123 merged
+```
+
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
+
+> When merged, complete my Todoist task "Ship feature X". Also remove it from the watch list.
+
+Tickler will close the Todoist task and stop watching the PR — all automatically when the merge lands.
+
+---
+
+### CI failed → create a Todoist task to investigate
+
+```text
+/tickler add https://github.com/org/repo/pull/123 ci-failed
+```
+
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
+
+> When CI fails, create a Todoist task "Investigate CI failure on PR #123" due today in my Work project.
+
+---
+
+### PR approved → comment on the linked Todoist task
+
+```text
+/tickler add https://github.com/org/repo/pull/123 approved
+```
+
+After adding, tickler asks: **"Would you like to add any actions?"** Tell it:
+
+> When approved, add a comment "PR approved — ready to merge" to the Todoist task "Ship feature X".
 
 ## Notifications
 
