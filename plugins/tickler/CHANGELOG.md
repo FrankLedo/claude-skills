@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.4](https://github.com/FrankLedo/claude-skills/compare/v0.4.3...v0.4.4) (2026-05-28)
+
+
+### Bug Fixes
+
+* **tickler:** make remove-item and append-fired-action idempotent; fix stop-sentinel check syntax ([#118](https://github.com/FrankLedo/claude-skills/issues/118)) ([3fb6ca0](https://github.com/FrankLedo/claude-skills/commit/3fb6ca09b7181cf73b6afa08e3b3c3111a914a60))
+
 ## [0.4.3](https://github.com/FrankLedo/claude-skills/compare/v0.4.2...v0.4.3) (2026-05-27)
 
 
