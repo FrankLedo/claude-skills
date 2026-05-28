@@ -142,7 +142,7 @@ switch (cmd) {
     if (!url) die('remove-item requires <url>');
     const items  = readItems();
     const kept   = items.filter(i => i.url !== url);
-    if (kept.length === items.length) die(`Not found: ${url}`);
+    if (kept.length === items.length) { console.log(`Not watching: ${url}`); break; }
     writeAtomic(kept);
     console.log(`Removed: ${url}`);
     break;
@@ -155,7 +155,7 @@ switch (cmd) {
     if (!url || !key) die('append-fired-action requires <url> <key>');
     const items = readItems();
     const item  = items.find(i => i.url === url);
-    if (!item) die(`Not found: ${url}`);
+    if (!item) { console.log(`Item already removed, skipping: ${key} for ${url}`); break; }
     if (!item.state) item.state = {};
     if (!Array.isArray(item.state.fired_actions)) item.state.fired_actions = [];
     if (!item.state.fired_actions.includes(key)) {
