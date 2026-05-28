@@ -74,9 +74,18 @@ function parseJiraTicket(url) {
 async function doMerge() {
   const { isPR } = parseGitHubUrl(itemUrl);
   if (!isPR) fail('merge verb is only valid for GitHub PRs');
-  const flag = method === 'merge' ? '--merge' : method === 'rebase' ? '--rebase' : '--squash';
+  const flag  = method === 'merge' ? '--merge' : method === 'rebase' ? '--rebase' : '--squash';
   const extra = adminMerge ? ['--admin'] : [];
-  gh('pr', 'merge', flag, '--auto', ...extra, `"${itemUrl}"`);
+  try {
+    gh('pr', 'merge', flag, '--auto', ...extra, `"${itemUrl}"`);
+  } catch (err) {
+    if (err.message.includes('enablePullRequestAutoMerge')) {
+      // Repo has auto-merge disabled — merge immediately instead of queuing
+      gh('pr', 'merge', flag, ...extra, `"${itemUrl}"`);
+    } else {
+      throw err;
+    }
+  }
   ok();
 }
 
