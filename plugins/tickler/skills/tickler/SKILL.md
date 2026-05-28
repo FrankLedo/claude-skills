@@ -88,7 +88,9 @@ Parse `$ARGUMENTS` before doing anything else:
 
 ## Check Cycle (no-arg invocation)
 
-1. **Stop check** — if `${CLAUDE_PLUGIN_DATA}/stopped` exists, delete it and
+1. **Stop check** — run `[ -f "${CLAUDE_PLUGIN_DATA}/stopped" ]` via Bash (use
+   bracket syntax, not `test`, to avoid npm interference in the scripts dir).
+   If it exits 0, delete the file (`rm "${CLAUDE_PLUGIN_DATA}/stopped"`) and
    output "Tickler stopped. Run `/tickler` to resume." Do not schedule another
    wakeup. Exit.
 
