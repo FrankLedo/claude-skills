@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.5](https://github.com/FrankLedo/claude-skills/compare/v0.4.4...v0.4.5) (2026-05-28)
+
+
+### Features
+
+* **tickler:** add test suite with extracted conditions module ([#120](https://github.com/FrankLedo/claude-skills/issues/120)) ([c392a20](https://github.com/FrankLedo/claude-skills/commit/c392a20d2310d643ef9cab3f3fec61b0e8f94da3))
+
 ## [0.4.4](https://github.com/FrankLedo/claude-skills/compare/v0.4.3...v0.4.4) (2026-05-28)
 
 
