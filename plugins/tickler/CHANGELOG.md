@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.6](https://github.com/FrankLedo/claude-skills/compare/v0.4.5...v0.4.6) (2026-05-28)
+
+
+### Bug Fixes
+
+* **tickler:** fall back to immediate merge when auto-merge is disabled ([#123](https://github.com/FrankLedo/claude-skills/issues/123)) ([b01b5b1](https://github.com/FrankLedo/claude-skills/commit/b01b5b1e22572be2db6b090e05e76b2ab5d2306c))
+
 ## [0.4.5](https://github.com/FrankLedo/claude-skills/compare/v0.4.4...v0.4.5) (2026-05-28)
 
 
