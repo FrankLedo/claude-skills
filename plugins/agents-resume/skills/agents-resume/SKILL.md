@@ -3,9 +3,10 @@ name: agents-resume
 description: >
   Use when the user wants to resume background agents after a reboot or
   restart. Scans ~/.claude/jobs/ and relaunches sessions in background mode.
-  Optionally filter by state (e.g. blocked, done, running).
+  Optionally filter by one or more states: working, blocked, idle,
+  completed, failed, stopped, done.
 user-invocable: true
-argument-hint: "[state ...]"
+argument-hint: "[working | blocked | idle | completed | failed | stopped | done ...]"
 ---
 
 # Agents Resume
@@ -23,7 +24,7 @@ are at `$SKILL_SCRIPTS_DIR/scripts/`.
 Pass any arguments the user provided as positional args to the script:
 
 - No args → resume all jobs
-- One or more state names → resume only jobs matching those states (e.g. `blocked`, `done`, `running`)
+- One or more state names → resume only jobs matching those states (e.g. `blocked`, `idle`, `done`)
 
 ```bash
 node "$SKILL_SCRIPTS_DIR/scripts/resume.js" [state ...]
