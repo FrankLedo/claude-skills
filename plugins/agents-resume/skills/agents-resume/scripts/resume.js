@@ -13,6 +13,8 @@ try {
   process.exit(0);
 }
 
+const filterStates = process.argv.slice(2);
+
 const jobs = entries
   .filter(name => name !== 'pins.json')
   .map(name => {
@@ -34,7 +36,8 @@ const jobs = entries
       return null;
     }
   })
-  .filter(j => j !== null && j.state !== 'completed' && j.sid);
+  .filter(j => j !== null && j.sid)
+  .filter(j => filterStates.length === 0 || filterStates.includes(j.state));
 
 if (jobs.length === 0) {
   console.log('No sessions to resume.');
