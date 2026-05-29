@@ -6,7 +6,7 @@ description: >
   Optionally filter by one or more states: working, blocked, idle,
   completed, failed, stopped, done.
 user-invocable: true
-argument-hint: "[all | working | blocked | idle | completed | failed | stopped | done ...]"
+argument-hint: "[all (default) | working | blocked | idle | completed | failed | stopped | done ...]"
 ---
 
 # Agents Resume
