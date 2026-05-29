@@ -13,7 +13,8 @@ try {
   process.exit(0);
 }
 
-const filterStates = process.argv.slice(2);
+const args = process.argv.slice(2);
+const filterStates = args.includes('all') ? [] : args;
 
 const jobs = entries
   .filter(name => name !== 'pins.json')
