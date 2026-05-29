@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.7](https://github.com/FrankLedo/claude-skills/compare/v0.4.6...v0.4.7) (2026-05-29)
+
+
+### Features
+
+* **tickler:** add claude-resume-bg and claude-resume action verbs ([#125](https://github.com/FrankLedo/claude-skills/issues/125)) ([#126](https://github.com/FrankLedo/claude-skills/issues/126)) ([71ba606](https://github.com/FrankLedo/claude-skills/commit/71ba6068ed2952130b4338e74cff47b83d876ca9))
+
 ## [0.4.6](https://github.com/FrankLedo/claude-skills/compare/v0.4.5...v0.4.6) (2026-05-28)
 
 
