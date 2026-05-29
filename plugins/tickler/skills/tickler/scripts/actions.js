@@ -27,7 +27,7 @@
 
 'use strict';
 
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const path = require('path');
 
 const argv = process.argv.slice(2);
@@ -44,6 +44,8 @@ const jiraBaseUrl  = get('--jira-base-url')  || '';
 const jiraEmail    = get('--jira-email')     || '';
 const jiraToken    = get('--jira-token')     || '';
 const cmd          = get('--cmd')            || '';
+const session      = get('--session')        || '';
+const cwd          = get('--cwd')            || '';
 
 function ok(extra)   { console.log(JSON.stringify({ success: true, ...extra })); }
 function fail(msg)   { console.error(JSON.stringify({ error: msg })); process.exit(1); }
@@ -151,6 +153,21 @@ function doShell() {
   ok({ output });
 }
 
+function doClaudeResumeBg() {
+  if (!session) fail('claude-resume-bg requires --session');
+  if (!cwd)     fail('claude-resume-bg requires --cwd');
+  // Pipe "/bg\n" as stdin — workaround until --bg CLI flag ships in Claude Code
+  const child = spawn('claude', ['--resume', session], {
+    cwd,
+    detached: true,
+    stdio: ['pipe', 'ignore', 'ignore'],
+  });
+  child.stdin.write('/bg\n');
+  child.stdin.end();
+  child.unref();
+  ok();
+}
+
 // --- dispatch --------------------------------------------------------------
 
 async function main() {
@@ -160,7 +177,8 @@ async function main() {
     case 'comment':                 doComment();        break;
     case 'jira_transition':   await doJiraTransition(); break;
     case 'remove_from_watch':       doRemoveFromWatch(); break;
-    case 'shell':                   doShell();          break;
+    case 'shell':                   doShell();             break;
+    case 'claude-resume-bg':        doClaudeResumeBg();    break;
     default:
       fail(`Unknown verb: ${verb}. Tier-2 verbs (run, slack_dm, interactive) are handled by the monitor agent.`);
   }
