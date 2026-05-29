@@ -22,6 +22,7 @@ claude plugin install slack-monitor
 |-------|-------------|
 | [slack-monitor](plugins/slack-monitor/) | Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending. |
 | [tickler](plugins/tickler/) | Watch GitHub PRs, issues, and Jira tickets. Get notified when something changes or meets a condition. |
+| [agents-resume](plugins/agents-resume/) | Resume all background agents after a reboot. |
 
 ## Usage
 

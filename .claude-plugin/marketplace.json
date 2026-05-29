@@ -14,6 +14,11 @@
       "name": "tickler",
       "source": "./plugins/tickler",
       "description": "Watch GitHub PRs, issues, and Jira tickets for state changes. Notifies when a watched item meets its condition."
+    },
+    {
+      "name": "agents-resume",
+      "source": "./plugins/agents-resume",
+      "description": "Resume all background agents after a reboot. Reads job state from ~/.claude/jobs/ and relaunches each non-completed session."
     }
   ]
 }
