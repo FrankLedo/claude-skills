@@ -82,6 +82,8 @@ function buildActionArgs(verb, url, args) {
   if (args.body)      parts.push(`--body ${JSON.stringify(args.body)}`);
   if (args.to)        parts.push(`--to ${JSON.stringify(args.to)}`);
   if (args.cmd)       parts.push(`--cmd ${JSON.stringify(args.cmd)}`);
+  if (args.session)   parts.push(`--session ${JSON.stringify(args.session)}`);
+  if (args.cwd)       parts.push(`--cwd ${JSON.stringify(args.cwd)}`);
   if (jiraBaseUrl)    parts.push(`--jira-base-url "${jiraBaseUrl}"`);
   if (jiraEmail)      parts.push(`--jira-email "${jiraEmail}"`);
   if (jiraToken)      parts.push(`--jira-token "${jiraToken}"`);
@@ -109,6 +111,17 @@ for (const entry of changed) {
 
   for (const action of (entry.pending_actions || [])) {
     const { do: verb, args = {}, on: trigger } = action;
+
+    // claude-resume: print sticky resume command; do NOT record as fired so it repeats each cycle
+    if (verb === 'claude-resume') {
+      const resumeSession = args.session || '';
+      const resumeCwd     = args.cwd     || '';
+      process.stdout.write(`\n  ↩ Resume your session:\n`);
+      process.stdout.write(`    cd ${resumeCwd} && claude --resume ${resumeSession}\n`);
+      process.stdout.write(`    (Run \`/tickler remove ${url}\` to stop repeating)\n`);
+      continue;
+    }
+
     try {
       const actionArgs = buildActionArgs(verb, url, args);
       execSync(`node "${actionsScript}" ${actionArgs}`, { encoding: 'utf8' });
