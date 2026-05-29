@@ -1,4 +1,5 @@
 {
   "plugins/slack-monitor": "0.3.7",
-  "plugins/tickler": "0.4.7"
+  "plugins/tickler": "0.4.7",
+  "plugins/agents-resume": "0.1.0"
 }
