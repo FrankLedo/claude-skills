@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.8](https://github.com/FrankLedo/claude-skills/compare/v0.4.7...v0.4.8) (2026-05-30)
+
+
+### Bug Fixes
+
+* **tickler:** skip check.js entirely on out-of-hours wakeups ([#132](https://github.com/FrankLedo/claude-skills/issues/132)) ([879974e](https://github.com/FrankLedo/claude-skills/commit/879974eb7a0d7d4d39ce42b308f01f81fdc5e576)), closes [#130](https://github.com/FrankLedo/claude-skills/issues/130)
+
 ## [0.4.7](https://github.com/FrankLedo/claude-skills/compare/v0.4.6...v0.4.7) (2026-05-29)
 
 
