@@ -113,6 +113,10 @@ Parse `$ARGUMENTS` before doing anything else:
    `local_dow` (1=Mon … 7=Sun). Do NOT estimate or infer the time from
    context.
 
+   **If outside work hours** (`local_hour >= endHour` or `local_hour < startHour`
+   or `local_dow` outside `days`): skip steps 3–5 entirely and go directly
+   to step 6. Do NOT run `check.js` or make any API calls.
+
 3. Run `check.js` directly via Bash (resolving `env:` token prefixes from config):
    ```bash
    node $SKILL_SCRIPTS_DIR/scripts/check.js \
@@ -257,8 +261,10 @@ Parse `$ARGUMENTS` before doing anything else:
      `local_hour` and `local_dow` now — do NOT estimate
    - Outside work hours (`local_hour >= endHour` or `local_hour < startHour`
      or `local_dow` outside `days`):
-     → `ScheduleWakeup(delaySeconds: 3600, prompt: "/tickler:tickler", reason: "tickler out-of-hours check")`
-     (Will re-check next hour; if still outside hours, reschedule again.)
+     → `ScheduleWakeup(delaySeconds: 3600, prompt: "/tickler:tickler", reason: "tickler out-of-hours — waiting for startHour")`
+     Do NOT run `check.js`. This wakeup is time-keeping only — no API calls,
+     no notifications, no state changes. The next wakeup will re-check the
+     time and either skip again or proceed to step 3.
    - Within work hours:
      → `ScheduleWakeup(delaySeconds: min(next_interval * 60, 3600), prompt: "/tickler:tickler", reason: "tickler check")`
 
