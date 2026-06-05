@@ -6,6 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Claude Code plugin marketplace collection. Plugins are prompt-driven workflows (markdown + YAML config) distributed via the Claude Code plugin marketplace. There are no build steps, no package managers, and no test suite — plugins are pure documentation that Claude Code interprets and executes.
 
+## Authoring/Editing/Reviewing Skills
+
+Always use the **superpowers** skills when authoring, editing, or reviewing skills (`SKILL.md` / `workflow/` files) in this repo:
+
+- Authoring or editing a skill → invoke `superpowers:writing-skills` first (and `superpowers:brainstorming` before designing a brand-new skill)
+- Reviewing skill changes → use `superpowers:requesting-code-review` / `superpowers:receiving-code-review`
+
+This repo *is* a skills/plugins marketplace, so skill quality and convention-adherence are the product. This rule does not apply to plain `scripts/` Node helpers — those are ordinary code.
+
 ## Release Process
 
 Releases are fully automated via GitHub Actions + Release Please. See `.github/WORKFLOWS.md` for the full process.
