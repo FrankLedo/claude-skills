@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { readdirSync, readFileSync, statSync } = require('fs');
+const { readdirSync, readFileSync } = require('fs');
 const { join } = require('path');
 const { spawn } = require('child_process');
 
@@ -21,11 +21,6 @@ const jobs = entries
   .map(name => {
     const stateFile = join(jobsDir, name, 'state.json');
     try {
-      statSync(stateFile);
-    } catch {
-      return null;
-    }
-    try {
       const d = JSON.parse(readFileSync(stateFile, 'utf8'));
       return {
         state: d.state || '?',
@@ -33,7 +28,12 @@ const jobs = entries
         sid: d.resumeSessionId || d.sessionId || '',
         intent: (d.intent || name).slice(0, 60),
       };
-    } catch {
+    } catch (e) {
+      // Missing state.json is expected for jobs that never wrote one — stay quiet.
+      // Anything else (corrupt JSON, permission errors) means a job was skipped, so warn.
+      if (e.code !== 'ENOENT') {
+        console.warn(`  ⚠ Skipped ${name}: ${e.message}`);
+      }
       return null;
     }
   })
