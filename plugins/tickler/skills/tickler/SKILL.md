@@ -7,7 +7,7 @@ description: >
   a specific item. Also runs as a background monitor that checks all
   watched items on a schedule.
 user-invocable: true
-argument-hint: "[add <url> [condition] | remove <url> | list | config | setup | stop | (no args to check now)]"
+argument-hint: "[add <url> [condition] | update <url> <patch> | remove <url> | list | config | setup | stop | (no args to check now)]"
 ---
 
 # Tickler
@@ -29,7 +29,7 @@ agents/
   monitor-prompt.md — isolated monitor agent prompt
 workflow/
   SETUP.md       — first-run setup wizard
-  ADD.md         — add / remove / list items
+  ADD.md         — add / update / remove / list items
   NOTIFY.md      — notification logic (direct / Slack)
   FORMATS.md     — tickler.json and state.json schemas
 scripts/
@@ -80,6 +80,7 @@ Parse `$ARGUMENTS` before doing anything else:
 |----------|--------|
 | `setup` | Read `workflow/SETUP.md` and run wizard |
 | `add <url> [condition]` | Read `workflow/ADD.md` → add item |
+| `update <url> <patch>` | Read `workflow/ADD.md` → update item in place |
 | `remove <url>` | Read `workflow/ADD.md` → remove item |
 | `list` | Read `workflow/ADD.md` → list items |
 | `config` | Resolve `${CLAUDE_PLUGIN_DATA}` and print the full path to `CLAUDE.md`, then show current config values |
