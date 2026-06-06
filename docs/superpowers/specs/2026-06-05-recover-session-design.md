@@ -18,9 +18,15 @@ off the picker, reconstructs what was happening, and offers to relaunch them.
 
 ## Scope decisions (from brainstorming)
 
-- **Packaging:** a *new skill inside the existing `agents-resume` plugin*, not a
-  standalone plugin. One install gives both complementary tools; shared
-  versioning.
+- **Packaging:** a *new standalone plugin* at `plugins/recover-session/`.
+  (Originally planned as a second skill inside `agents-resume`, but that plugin
+  is being **removed from the marketplace** — its bulk reboot-relaunch is
+  superseded by Claude Code's `claude agents` view, which restores background
+  sessions for reattach/restart. So `recover-session` stands on its own.)
+- **Retiring `agents-resume`:** remove its entry from
+  `.claude-plugin/marketplace.json` (no longer discoverable/installable). The
+  plugin **files stay in the repo** (and its release-please package config is
+  left intact) so existing installs and history are undisturbed.
 - **End behavior:** summarize the recovered session, then *offer to relaunch* it
   in the correct working directory (reusing `resume.js`'s detached-spawn + `/bg`
   pattern).
@@ -36,22 +42,29 @@ off the picker, reconstructs what was happening, and offers to relaunch them.
 ## Architecture
 
 ```
-plugins/agents-resume/
-  .claude-plugin/plugin.json          ← broaden description + keywords (no manual version bump)
-  README.md                           ← document both skills
-  skills/
-    agents-resume/                    ← existing, unchanged
-      SKILL.md
-      scripts/resume.js
-    recover-session/                  ← NEW
-      SKILL.md
-      scripts/recover.js
+plugins/recover-session/                ← NEW standalone plugin
+  .claude-plugin/plugin.json            ← name, version 0.1.0, description, keywords
+  README.md
+  CHANGELOG.md                          ← empty header; release-please populates
+  skills/recover-session/
+    SKILL.md
+    scripts/recover.js
 ```
 
-No `marketplace.json` or `release-please-config.json` changes — the
-`agents-resume` plugin is already registered as a package, and a second skill
-lives inside it. The version bump is driven by the `feat(agents-resume):` commit
-via release-please; `plugin.json`'s `version` field is **not** edited by hand.
+Registration (per repo CLAUDE.md "Adding a New Plugin"):
+
+- `.claude-plugin/marketplace.json` — **add** a `recover-session` entry and
+  **remove** the `agents-resume` entry.
+- `release-please-config.json` — **add** a `plugins/recover-session` package
+  (same shape as the others). Leave `plugins/agents-resume` intact.
+- `.release-please-manifest.json` — **add** `"plugins/recover-session": "0.1.0"`.
+  Leave `plugins/agents-resume` intact.
+- Root `README.md` — **add** a `recover-session` row and **remove** the
+  `agents-resume` row (no longer in the marketplace).
+
+`plugin.json`'s `version` starts at `0.1.0` and thereafter is owned by
+release-please (driven by `feat(recover-session):` / `fix(recover-session):`
+commit subjects) — not edited by hand after creation.
 
 ## Component: `recover.js` (deterministic core)
 
@@ -162,16 +175,14 @@ real transcript store):
 
 ## Documentation
 
-- `plugins/agents-resume/README.md` — document both skills (resume vs. recover)
-  and when each applies.
-- `plugins/agents-resume/.claude-plugin/plugin.json` — broaden `description` and
-  add recovery `keywords` (e.g. `recover`, `session`, `transcript`).
-- Root `README.md` — check the plugins-table entry for `agents-resume` and widen
-  its scope wording if it only mentions reboot-resume.
+- `plugins/recover-session/README.md` — user-facing docs: what it does, when it
+  triggers, how it works.
+- `plugins/recover-session/.claude-plugin/plugin.json` — `description` +
+  `keywords` (`recover`, `session`, `transcript`, `resume`).
+- Root `README.md` — add a `recover-session` row; remove the `agents-resume` row.
 
 ## Out of scope (YAGNI)
 
-- No new standalone plugin, marketplace entry, or release-please package.
 - No editing/redacting transcripts — recovery is read-only.
 - No interactive TUI picker in the script; selection is handled conversationally
   by the skill.

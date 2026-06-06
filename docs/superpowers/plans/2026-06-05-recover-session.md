@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a `recover-session` skill to the `agents-resume` plugin that finds Claude Code sessions missing from the `/resume` picker (transcripts under `~/.claude/projects/`), summarizes them, and offers to relaunch them in the right directory.
+**Goal:** Add a standalone `recover-session` plugin that finds Claude Code sessions missing from the `/resume` picker (transcripts under `~/.claude/projects/`), summarizes them, and offers to relaunch them in the right directory — and remove the superseded `agents-resume` plugin from the marketplace.
 
-**Architecture:** A Node helper (`recover.js`, built-in modules only, read-only) does all deterministic work — listing recent transcripts and locating/extracting one by id. A thin `SKILL.md` interprets that output, warns about secrets, and offers a background relaunch using the same detached-spawn + `/bg` pattern as the sibling `resume.js`.
+**Architecture:** A Node helper (`recover.js`, built-in modules only, read-only) does all deterministic work — listing recent transcripts and locating/extracting one by id. A thin `SKILL.md` interprets that output, warns about secrets, and offers a background relaunch using a detached-spawn + `/bg` pattern. Packaged as its own plugin at `plugins/recover-session/`.
 
 **Tech Stack:** Node.js (built-in `fs`, `path`, `os` only). No npm, no test runner — verification uses throwaway Node `assert` scripts against crafted JSONL fixtures.
 
@@ -62,7 +62,7 @@ Each test sets `process.env.HOME` to the fixture root **before** requiring `reco
 ### Task 1: Scaffold `recover.js` with shared helpers + `list` command
 
 **Files:**
-- Create: `plugins/agents-resume/skills/recover-session/scripts/recover.js`
+- Create: `plugins/recover-session/skills/recover-session/scripts/recover.js`
 - Test (throwaway, not committed): `$CLAUDE_JOB_DIR/tmp/test-list.js`
 
 - [ ] **Step 1: Write the failing test**
@@ -95,7 +95,7 @@ function makeFixture(root) {
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rs-list-'));
 const { sessionId } = makeFixture(root);
-const script = path.resolve(__dirname, '../../plugins/agents-resume/skills/recover-session/scripts/recover.js');
+const script = path.resolve(__dirname, '../../plugins/recover-session/skills/recover-session/scripts/recover.js');
 
 const out = execFileSync('node', [script, 'list'], { env: { ...process.env, HOME: root }, encoding: 'utf8' });
 const sessions = JSON.parse(out);
@@ -116,7 +116,7 @@ Expected: FAIL — `Cannot find module .../recover.js` (script doesn't exist yet
 
 - [ ] **Step 3: Write minimal implementation**
 
-Create `plugins/agents-resume/skills/recover-session/scripts/recover.js`:
+Create `plugins/recover-session/skills/recover-session/scripts/recover.js`:
 
 ```js
 #!/usr/bin/env node
@@ -230,8 +230,8 @@ Expected: the first still prints `PASS test-list` (stdout JSON is clean), the se
 - [ ] **Step 6: Commit**
 
 ```bash
-git add plugins/agents-resume/skills/recover-session/scripts/recover.js
-git commit -m "feat(agents-resume): add recover.js list command for recover-session"
+git add plugins/recover-session/skills/recover-session/scripts/recover.js
+git commit -m "feat(recover-session): add recover.js list command"
 ```
 
 ---
@@ -239,7 +239,7 @@ git commit -m "feat(agents-resume): add recover.js list command for recover-sess
 ### Task 2: Add `find <id>` command (locate + extract turns)
 
 **Files:**
-- Modify: `plugins/agents-resume/skills/recover-session/scripts/recover.js`
+- Modify: `plugins/recover-session/skills/recover-session/scripts/recover.js`
 - Test (throwaway): `$CLAUDE_JOB_DIR/tmp/test-find.js`
 
 - [ ] **Step 1: Write the failing test**
@@ -273,7 +273,7 @@ function makeFixture(root) {
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rs-find-'));
 const { sessionId, file } = makeFixture(root);
-const script = path.resolve('/Users/fxl/Projects/claude-skills/.claude/worktrees/fix-resume-silent-catch/plugins/agents-resume/skills/recover-session/scripts/recover.js');
+const script = path.resolve('/Users/fxl/Projects/claude-skills/.claude/worktrees/fix-resume-silent-catch/plugins/recover-session/skills/recover-session/scripts/recover.js');
 const env = { ...process.env, HOME: root };
 
 // found case
@@ -362,17 +362,17 @@ Expected: `PASS test-find`
 
 Run:
 ```bash
-node plugins/agents-resume/skills/recover-session/scripts/recover.js list --limit 3
-ID=$(node plugins/agents-resume/skills/recover-session/scripts/recover.js list --limit 1 | node -e 'console.log(JSON.parse(require("fs").readFileSync(0)).pop().sessionId)')
-node plugins/agents-resume/skills/recover-session/scripts/recover.js find "$ID" | node -e 'const o=JSON.parse(require("fs").readFileSync(0));console.log("cwd:",o.cwd,"turns:",o.turns.length)'
+node plugins/recover-session/skills/recover-session/scripts/recover.js list --limit 3
+ID=$(node plugins/recover-session/skills/recover-session/scripts/recover.js list --limit 1 | node -e 'console.log(JSON.parse(require("fs").readFileSync(0)).pop().sessionId)')
+node plugins/recover-session/skills/recover-session/scripts/recover.js find "$ID" | node -e 'const o=JSON.parse(require("fs").readFileSync(0));console.log("cwd:",o.cwd,"turns:",o.turns.length)'
 ```
 Expected: `list` prints up to 3 sessions with real cwds/intents; `find` prints a real cwd and a non-zero turn count. No crash.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add plugins/agents-resume/skills/recover-session/scripts/recover.js
-git commit -m "feat(agents-resume): add recover.js find command with turn extraction"
+git add plugins/recover-session/skills/recover-session/scripts/recover.js
+git commit -m "feat(recover-session): add recover.js find command with turn extraction"
 ```
 
 ---
@@ -380,11 +380,11 @@ git commit -m "feat(agents-resume): add recover.js find command with turn extrac
 ### Task 3: Write `SKILL.md`
 
 **Files:**
-- Create: `plugins/agents-resume/skills/recover-session/SKILL.md`
+- Create: `plugins/recover-session/skills/recover-session/SKILL.md`
 
 - [ ] **Step 1: Create the skill file**
 
-Create `plugins/agents-resume/skills/recover-session/SKILL.md`:
+Create `plugins/recover-session/skills/recover-session/SKILL.md`:
 
 ```markdown
 ---
@@ -446,8 +446,7 @@ deletes transcripts.
    cd "<cwd>" && claude --resume <id>
    ```
    Then offer to relaunch it in the background for them. If they accept, spawn it
-   detached in the decoded `cwd` (same pattern as the sibling `agents-resume`
-   skill's `resume.js`): run `claude --resume <id>` with `cwd` set to the
+   detached in the decoded `cwd`: run `claude --resume <id>` with `cwd` set to the
    session's cwd, `detached: true`, write `/bg\n` to its stdin, and `unref()` it.
    Confirm what was launched.
 
@@ -458,106 +457,69 @@ Do not relaunch without explicit confirmation.
 
 Run:
 ```bash
-node -e 'const fs=require("fs");const t=fs.readFileSync("plugins/agents-resume/skills/recover-session/SKILL.md","utf8");const m=t.match(/^---\n([\s\S]*?)\n---/);if(!m)throw new Error("no frontmatter");["name:","description:","user-invocable:"].forEach(k=>{if(!m[1].includes(k))throw new Error("missing "+k)});console.log("frontmatter OK")'
+node -e 'const fs=require("fs");const t=fs.readFileSync("plugins/recover-session/skills/recover-session/SKILL.md","utf8");const m=t.match(/^---\n([\s\S]*?)\n---/);if(!m)throw new Error("no frontmatter");["name:","description:","user-invocable:"].forEach(k=>{if(!m[1].includes(k))throw new Error("missing "+k)});console.log("frontmatter OK")'
 ```
 Expected: `frontmatter OK`
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add plugins/agents-resume/skills/recover-session/SKILL.md
-git commit -m "feat(agents-resume): add recover-session SKILL.md"
+git add plugins/recover-session/skills/recover-session/SKILL.md
+git commit -m "feat(recover-session): add SKILL.md"
 ```
 
 ---
 
-### Task 4: Update plugin metadata and docs
+### Task 4: Scaffold the standalone plugin, register it, and retire agents-resume
+
+Tasks 1–3 already created `plugins/recover-session/skills/recover-session/{scripts/recover.js,SKILL.md}`. This task adds the plugin manifest/docs, registers the plugin, and removes `agents-resume` from the marketplace.
 
 **Files:**
-- Modify: `plugins/agents-resume/.claude-plugin/plugin.json`
-- Modify: `plugins/agents-resume/README.md`
-- Modify: `README.md` (root, line 25)
+- Create: `plugins/recover-session/.claude-plugin/plugin.json`
+- Create: `plugins/recover-session/README.md`
+- Create: `plugins/recover-session/CHANGELOG.md`
+- Modify: `.claude-plugin/marketplace.json`
+- Modify: `release-please-config.json`
+- Modify: `.release-please-manifest.json`
+- Modify: `README.md` (root)
 
-- [ ] **Step 1: Broaden `plugin.json` description + keywords**
+- [ ] **Step 1: Create the plugin manifest**
 
-In `plugins/agents-resume/.claude-plugin/plugin.json`, replace the `description` value and the `keywords` array.
+Create `plugins/recover-session/.claude-plugin/plugin.json`:
 
-Change description from:
 ```json
-  "description": "Resume all background agents after a reboot. Reads job state from ~/.claude/jobs/ and relaunches each non-completed session.",
-```
-to:
-```json
-  "description": "Resume and recover Claude Code sessions. agents-resume relaunches background jobs from ~/.claude/jobs/ after a reboot; recover-session finds sessions missing from the /resume picker via transcripts in ~/.claude/projects/.",
-```
-
-Change keywords from:
-```json
+{
+  "name": "recover-session",
+  "version": "0.1.0",
+  "description": "Find Claude Code sessions missing from the /resume picker. Locates transcripts in ~/.claude/projects/, summarizes them, and offers to relaunch in the original directory.",
+  "author": {
+    "name": "Frank Ledo",
+    "url": "https://github.com/FrankLedo"
+  },
+  "repository": "https://github.com/FrankLedo/claude-skills",
+  "license": "MIT",
   "keywords": [
-    "agents",
-    "background",
-    "resume",
-    "reboot",
-    "productivity"
-  ]
-```
-to:
-```json
-  "keywords": [
-    "agents",
-    "background",
-    "resume",
-    "recover",
     "session",
+    "recover",
+    "resume",
     "transcript",
-    "reboot",
     "productivity"
   ]
+}
 ```
 
-Do **not** change the `version` field — release-please bumps it from the `feat(agents-resume):` commits.
+- [ ] **Step 2: Create the plugin README**
 
-- [ ] **Step 2: Verify plugin.json is still valid JSON**
-
-Run: `node -e 'JSON.parse(require("fs").readFileSync("plugins/agents-resume/.claude-plugin/plugin.json","utf8"));console.log("plugin.json OK")'`
-Expected: `plugin.json OK`
-
-- [ ] **Step 3: Document both skills in the plugin README**
-
-Replace the top of `plugins/agents-resume/README.md` (the title line through the first paragraph) so it covers both skills. New content for the file:
+Create `plugins/recover-session/README.md`:
 
 ```markdown
-# agents-resume
+# recover-session
 
-Resume and recover Claude Code sessions. This plugin ships two complementary skills:
-
-- **agents-resume** — relaunch background jobs after a reboot.
-- **recover-session** — find a session that has fallen off the `/resume` picker.
-
-## agents-resume
-
-Claude writes persistent job state to `~/.claude/jobs/` as it runs background agents. After a reboot those sessions are dead, but their state survives. This skill scans that directory and relaunches every non-completed session in background mode with a single invocation.
-
-### Usage
-
-```text
-/agents-resume
-```
-
-Resumes all jobs where `state` is not `"completed"`. Once running, terminate any you no longer need.
-
-### How it works
-
-1. Reads `~/.claude/jobs/*/state.json`
-2. Skips completed jobs and unreadable entries
-3. Runs `claude --resume <sessionId>` detached for each, sending `/bg` to put it in background mode
-4. Prints a summary of what was resumed
-
-## recover-session
+Find a Claude Code session that has fallen off the `/resume` picker.
 
 The `/resume` picker scopes to the current working directory, so a session created elsewhere can be missing from the list — or `/resume <id>` returns "Session not found". The transcript is still on disk under `~/.claude/projects/`. This skill finds it, summarizes what was happening, and offers to relaunch it in the right directory.
 
-### Usage
+## Usage
 
 ```text
 /recover-session [session-id]
@@ -565,30 +527,108 @@ The `/resume` picker scopes to the current working directory, so a session creat
 
 It also triggers automatically when you mention that `/resume` failed, a session id wasn't found, or you "lost" a session.
 
-### How it works
+## How it works
 
 1. With an id → locates `<id>.jsonl` under `~/.claude/projects/` (falling back to a content scan); without one → lists recent sessions to pick from
 2. Decodes the working directory from the transcript and extracts the conversation turns (skipping tool calls/results, which can contain secrets)
 3. Summarizes intent, last action, and next step — with a reminder that transcripts may contain sensitive data
 4. Offers to relaunch via `claude --resume <id>` in the decoded directory
+
+The helper is read-only — it never edits or deletes transcripts.
 ```
 
-- [ ] **Step 4: Broaden the root README plugins-table row**
+- [ ] **Step 3: Create an empty CHANGELOG**
 
-In `README.md`, change line 25 from:
+Create `plugins/recover-session/CHANGELOG.md`:
+
+```markdown
+# Changelog
+```
+
+- [ ] **Step 4: Register in the marketplace (and remove agents-resume)**
+
+In `.claude-plugin/marketplace.json`, replace the `agents-resume` entry (the last object in `plugins`) with a `recover-session` entry.
+
+Change:
+```json
+    {
+      "name": "agents-resume",
+      "source": "./plugins/agents-resume",
+      "description": "Resume all background agents after a reboot. Reads job state from ~/.claude/jobs/ and relaunches each non-completed session."
+    }
+```
+to:
+```json
+    {
+      "name": "recover-session",
+      "source": "./plugins/recover-session",
+      "description": "Find Claude Code sessions missing from the /resume picker via transcripts in ~/.claude/projects/, summarize them, and offer to relaunch."
+    }
+```
+
+- [ ] **Step 5: Add the release-please package**
+
+In `release-please-config.json`, add a `plugins/recover-session` package after the `plugins/agents-resume` block (leave `agents-resume` intact). Insert this entry inside `packages` (mind the trailing comma on the preceding block):
+
+```json
+    "plugins/recover-session": {
+      "release-type": "simple",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": ".claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+```
+
+- [ ] **Step 6: Add the release-please manifest entry**
+
+In `.release-please-manifest.json`, add the new plugin (leave `agents-resume` intact):
+
+```json
+{
+  "plugins/slack-monitor": "0.3.7",
+  "plugins/tickler": "0.4.8",
+  "plugins/agents-resume": "0.1.3",
+  "plugins/recover-session": "0.1.0"
+}
+```
+
+- [ ] **Step 7: Update the root README plugins table**
+
+In `README.md`, remove the `agents-resume` row and add a `recover-session` row.
+
+Remove:
 ```text
 | [agents-resume](plugins/agents-resume/) | Resume all background agents after a reboot. |
 ```
-to:
+Add (in its place):
 ```text
-| [agents-resume](plugins/agents-resume/) | Resume background agents after a reboot, and recover sessions missing from the `/resume` picker. |
+| [recover-session](plugins/recover-session/) | Find sessions missing from the `/resume` picker, summarize them, and relaunch in the original directory. |
 ```
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 8: Verify all touched JSON is valid**
+
+Run:
+```bash
+for f in plugins/recover-session/.claude-plugin/plugin.json .claude-plugin/marketplace.json release-please-config.json .release-please-manifest.json; do node -e "JSON.parse(require('fs').readFileSync('$f','utf8'));console.log('OK $f')"; done
+```
+Expected: four `OK ...` lines. Also confirm `agents-resume` is gone from the marketplace but still present in release-please:
+```bash
+node -e 'const m=JSON.parse(require("fs").readFileSync(".claude-plugin/marketplace.json"));console.log("marketplace:",m.plugins.map(p=>p.name).join(", "))'
+```
+Expected: `marketplace: slack-monitor, tickler, recover-session` (no `agents-resume`).
+
+- [ ] **Step 9: Commit**
 
 ```bash
-git add plugins/agents-resume/.claude-plugin/plugin.json plugins/agents-resume/README.md README.md
-git commit -m "docs(agents-resume): document recover-session skill"
+git add plugins/recover-session/.claude-plugin/plugin.json plugins/recover-session/README.md plugins/recover-session/CHANGELOG.md .claude-plugin/marketplace.json release-please-config.json .release-please-manifest.json README.md
+git commit -m "feat(recover-session): scaffold plugin, register it, remove agents-resume from marketplace"
 ```
 
 ---
@@ -609,18 +649,18 @@ Expected: `PASS test-list` then `PASS test-find`.
 
 Run:
 ```bash
-find plugins/agents-resume/skills/recover-session -type f | sort
-node -e 'JSON.parse(require("fs").readFileSync("plugins/agents-resume/.claude-plugin/plugin.json","utf8"));console.log("plugin.json OK")'
+find plugins/recover-session -type f | sort
+node -e 'JSON.parse(require("fs").readFileSync("plugins/recover-session/.claude-plugin/plugin.json","utf8"));console.log("plugin.json OK")'
 ```
-Expected: lists `SKILL.md` and `scripts/recover.js`; prints `plugin.json OK`.
+Expected: lists `plugin.json`, `README.md`, `CHANGELOG.md`, `SKILL.md`, and `scripts/recover.js`; prints `plugin.json OK`.
 
 - [ ] **Step 3: Push and open the PR**
 
 ```bash
 git push -u origin feat/recover-session-skill
 gh pr create --repo FrankLedo/claude-skills --base main --head feat/recover-session-skill \
-  --title "feat(agents-resume): add recover-session skill" \
-  --body "Implements #136. Adds a recover-session skill (second skill in the agents-resume plugin) that finds sessions missing from the /resume picker via transcripts under ~/.claude/projects/, summarizes them, and offers to relaunch. Deterministic find/decode/extract in recover.js (built-in modules, read-only); judgment in SKILL.md. Spec: docs/superpowers/specs/2026-06-05-recover-session-design.md. Closes #136"
+  --title "feat(recover-session): add recover-session plugin" \
+  --body "Implements #136. Adds a standalone recover-session plugin that finds sessions missing from the /resume picker via transcripts under ~/.claude/projects/, summarizes them, and offers to relaunch. Deterministic find/decode/extract in recover.js (built-in modules, read-only); judgment in SKILL.md. Also removes the superseded agents-resume plugin from the marketplace (files retained in repo). Spec: docs/superpowers/specs/2026-06-05-recover-session-design.md. Closes #136"
 ```
 Expected: a PR URL. Copilot is auto-requested as reviewer via the repo ruleset.
 
@@ -630,7 +670,7 @@ Expected: a PR URL. Copilot is auto-requested as reviewer via the repo ruleset.
 
 ## Notes for the implementer
 
-- **No version bumps by hand** anywhere — release-please owns `plugin.json` `version` and the CHANGELOG, driven by the `feat(agents-resume):` commit subjects.
+- **No version bumps by hand** after creation — `plugin.json` starts at `0.1.0`; thereafter release-please owns `version` and the CHANGELOG, driven by `feat(recover-session):` / `fix(recover-session):` commit subjects.
 - **Throwaway tests are not committed.** They live in `$CLAUDE_JOB_DIR/tmp`. Adding test files inside the plugin directory would pollute the marketplace structure (the repo has no test suite by design).
 - **recover.js stays read-only.** It never writes to `~/.claude/projects/`. The only process-spawning (relaunch) lives in `SKILL.md`, gated on user confirmation.
 - If the `path.resolve(__dirname, ...)` in `test-list.js` doesn't point at the repo, hardcode the absolute script path as `test-find.js` does.
