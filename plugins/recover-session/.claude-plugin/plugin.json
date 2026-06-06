@@ -1,6 +1,6 @@
 {
   "name": "recover-session",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find Claude Code sessions missing from the /resume picker. Locates transcripts in ~/.claude/projects/, summarizes them, and offers to relaunch in the original directory.",
   "author": {
     "name": "Frank Ledo",
