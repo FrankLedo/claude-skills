@@ -16,9 +16,9 @@
       "description": "Watch GitHub PRs, issues, and Jira tickets for state changes. Notifies when a watched item meets its condition."
     },
     {
-      "name": "agents-resume",
-      "source": "./plugins/agents-resume",
-      "description": "Resume all background agents after a reboot. Reads job state from ~/.claude/jobs/ and relaunches each non-completed session."
+      "name": "recover-session",
+      "source": "./plugins/recover-session",
+      "description": "Find Claude Code sessions missing from the /resume picker via transcripts in ~/.claude/projects/, summarize them, and offer to relaunch."
     }
   ]
 }
