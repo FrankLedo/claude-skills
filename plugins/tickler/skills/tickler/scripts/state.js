@@ -155,7 +155,16 @@ switch (cmd) {
     const item  = items.find(i => i.url === url);
     if (!item) die(`Not found: ${url}`);
 
+    // `url` is the primary lookup key (add-item enforces uniqueness); letting a
+    // patch rewrite it would silently create duplicates and break get/set/remove.
+    if ('url' in patch && patch.url !== url) {
+      die('update-item: cannot change url; remove-item and add-item instead');
+    }
+    // Reject prototype-pollution keys before applying the patch.
+    const FORBIDDEN = new Set(['__proto__', 'constructor', 'prototype']);
+
     for (const [key, value] of Object.entries(patch)) {
+      if (FORBIDDEN.has(key)) die(`update-item: forbidden key: ${key}`);
       // Actions merge by `on` so a patch can add/replace one action without
       // clobbering the rest; everything else is a shallow top-level overwrite.
       if (key === 'actions' && Array.isArray(value) && Array.isArray(item.actions)) {
