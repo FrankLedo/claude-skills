@@ -1,6 +1,6 @@
 {
   "name": "agents-resume",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Resume all background agents after a reboot. Reads job state from ~/.claude/jobs/ and relaunches each non-completed session.",
   "author": {
     "name": "Frank Ledo",
