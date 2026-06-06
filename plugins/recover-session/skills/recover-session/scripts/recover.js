@@ -59,7 +59,8 @@ function listFiles() {
 
 function idOf(name) { return name.replace(/\.jsonl$/, ''); }
 
-// cwd + first user intent, reading only as far as needed.
+// cwd + first user intent. The file is read in full, but JSON parsing stops
+// as soon as both are found.
 function summarize(file) {
   let cwd = null, intent = '';
   eachLine(file.full, (o) => {
@@ -82,8 +83,8 @@ function summarize(file) {
 // scan of the `sessionId` field. A raw substring scan is avoided on purpose —
 // it would false-match any transcript that merely *mentions* the id in a
 // message (e.g. a session discussing another session's id).
-function findFile(id) {
-  const files = listFiles();
+function findFile(id, files) {
+  files = files || listFiles();
   if (!files) return null;
   const hit = files.find(f => f.name === `${id}.jsonl`);
   if (hit) return hit;
@@ -134,7 +135,9 @@ switch (cmd) {
   case 'find': {
     const id = args[1];
     if (!id) die('find requires <session-id>');
-    const file = findFile(id);
+    const files = listFiles();
+    if (files === null) die('No ~/.claude/projects directory found.');
+    const file = findFile(id, files);
     if (!file) die(`Session not found: ${id}`);
     console.log(JSON.stringify(extract(file), null, 2));
     break;

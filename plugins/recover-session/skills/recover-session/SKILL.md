@@ -39,11 +39,9 @@ deletes transcripts.
      Show the recent sessions (intent, cwd, time) and ask which one to recover,
      then run `find <id>` on their choice.
 
-2. **Summarize.** From the `turns` in the `find` output, give a short
-   reconstruction: the original intent (first user turn), the last user request,
-   the last assistant action, and what looked like the next step.
-
-3. **Warn before showing transcript content.** Print this prominently:
+2. **Warn before showing any transcript content.** The summary in the next step
+   is derived from transcript text, so print this prominently *before*
+   summarizing:
 
    > ⚠ Session transcripts can contain secrets or personal data. This summary is
    > for your eyes — don't paste it into untrusted contexts.
@@ -51,6 +49,10 @@ deletes transcripts.
    (The helper already strips `tool_use`/`tool_result` blocks, which is where
    credential output usually lives, but plain text turns can still contain
    sensitive material.)
+
+3. **Summarize.** From the `turns` in the `find` output, give a short
+   reconstruction: the original intent (first user turn), the last user request,
+   the last assistant action, and what looked like the next step.
 
 4. **Offer to relaunch.** Show the manual command:
    ```bash
