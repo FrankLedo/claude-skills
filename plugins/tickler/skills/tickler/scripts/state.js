@@ -16,6 +16,10 @@
  *   set-states <json>            update item.state for each url in {url: state} map
  *   add-item <item-json> [<baseline-state-json>]
  *                                append item; optional initial state; auto-fills id/added
+ *   update-item <url> <patch-json>
+ *                                merge a partial patch into an existing item;
+ *                                actions merge by `on`, other fields overwrite;
+ *                                preserves id/added/snoozed_until/state unless patched
  *   remove-item <url>            remove item by url
  *   append-fired-action <url> <key>
  *                                append an "on:do" key to item.state.fired_actions (idempotent)
@@ -137,6 +141,43 @@ switch (cmd) {
     break;
   }
 
+  case 'update-item': {
+    const url     = pos[0];
+    const patchStr = pos[1];
+    if (!url || !patchStr) die('update-item requires <url> <patch-json>');
+
+    const patch = JSON.parse(patchStr);
+    if (typeof patch !== 'object' || patch === null || Array.isArray(patch)) {
+      die('update-item: patch must be a JSON object');
+    }
+
+    const items = readItems();
+    const item  = items.find(i => i.url === url);
+    if (!item) die(`Not found: ${url}`);
+
+    for (const [key, value] of Object.entries(patch)) {
+      // Actions merge by `on` so a patch can add/replace one action without
+      // clobbering the rest; everything else is a shallow top-level overwrite.
+      if (key === 'actions' && Array.isArray(value) && Array.isArray(item.actions)) {
+        const merged = item.actions.slice();
+        for (const action of value) {
+          const at = action && action.on != null
+            ? merged.findIndex(a => a && a.on === action.on)
+            : -1;
+          if (at === -1) merged.push(action);
+          else merged[at] = action;
+        }
+        item.actions = merged;
+      } else {
+        item[key] = value;
+      }
+    }
+
+    writeAtomic(items);
+    console.log(JSON.stringify(item));
+    break;
+  }
+
   case 'remove-item': {
     const url   = pos[0];
     if (!url) die('remove-item requires <url>');
@@ -194,6 +235,6 @@ switch (cmd) {
   default:
     die(
       `Unknown command: ${cmd}\n` +
-      'Commands: list, get-state, set-state, set-states, add-item, remove-item, migrate'
+      'Commands: list, get-state, set-state, set-states, add-item, update-item, remove-item, migrate'
     );
 }
