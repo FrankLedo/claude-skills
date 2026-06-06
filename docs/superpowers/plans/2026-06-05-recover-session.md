@@ -273,7 +273,7 @@ function makeFixture(root) {
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rs-find-'));
 const { sessionId, file } = makeFixture(root);
-const script = path.resolve('/Users/fxl/Projects/claude-skills/.claude/worktrees/fix-resume-silent-catch/plugins/recover-session/skills/recover-session/scripts/recover.js');
+const script = path.resolve(__dirname, '../../plugins/recover-session/skills/recover-session/scripts/recover.js');
 const env = { ...process.env, HOME: root };
 
 // found case
@@ -306,16 +306,21 @@ Expected: FAIL — `Unknown command: find` printed to stderr and non-zero exit (
 In `recover.js`, add these two functions above the `// --- dispatch ---` line:
 
 ```js
-// Find a transcript by id: fast path on filename, fallback to a substring scan.
+// Find a transcript by id: fast path on filename, fallback to a structured
+// scan of the `sessionId` field. A raw substring scan is avoided on purpose —
+// it would false-match any transcript that merely *mentions* the id in a
+// message (e.g. a session discussing another session's id).
 function findFile(id) {
   const files = listFiles();
   if (!files) return null;
   const hit = files.find(f => f.name === `${id}.jsonl`);
   if (hit) return hit;
   for (const f of files) {
-    let raw;
-    try { raw = fs.readFileSync(f.full, 'utf8'); } catch { continue; }
-    if (raw.includes(id)) return f;
+    let matched = false;
+    eachLine(f.full, (o) => {
+      if (o.sessionId === id) { matched = true; return false; }
+    });
+    if (matched) return f;
   }
   return null;
 }

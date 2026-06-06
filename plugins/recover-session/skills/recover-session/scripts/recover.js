@@ -125,7 +125,8 @@ switch (cmd) {
     const files = listFiles();
     if (files === null) { console.log('No ~/.claude/projects directory found.'); process.exit(0); }
     const li = args.indexOf('--limit');
-    const limit = li !== -1 ? (parseInt(args[li + 1], 10) || 20) : 20;
+    const parsed = li !== -1 ? parseInt(args[li + 1], 10) : 20;
+    const limit = Number.isInteger(parsed) && parsed >= 0 ? parsed : 20;
     console.log(JSON.stringify(files.slice(0, limit).map(summarize), null, 2));
     break;
   }
