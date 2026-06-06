@@ -54,13 +54,14 @@ deletes transcripts.
    reconstruction: the original intent (first user turn), the last user request,
    the last assistant action, and what looked like the next step.
 
-4. **Offer to relaunch.** Show the manual command:
+4. **Offer to relaunch.** Give the user the command to resume in the original
+   directory, for them to run themselves:
    ```bash
    cd "<cwd>" && claude --resume <id>
    ```
-   Then offer to relaunch it in the background for them. If they accept, spawn it
-   detached in the decoded `cwd`: run `claude --resume <id>` with `cwd` set to the
-   session's cwd, `detached: true`, write `/bg\n` to its stdin, and `unref()` it.
-   Confirm what was launched.
-
-Do not relaunch without explicit confirmation.
+   Do **not** try to relaunch it in the background for them. Background relaunch
+   can't be automated from here: `/background` only detaches a session a human is
+   *interactively* attached to, so a spawned/detached process has no terminal to
+   hand off and just ends up an orphaned TUI on an invisible PTY. Instead, tell
+   the user that once the session is up they can type `/bg` (or `/background`)
+   themselves to push it to the background.

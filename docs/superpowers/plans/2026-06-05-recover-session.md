@@ -4,7 +4,7 @@
 
 **Goal:** Add a standalone `recover-session` plugin that finds Claude Code sessions missing from the `/resume` picker (transcripts under `~/.claude/projects/`), summarizes them, and offers to relaunch them in the right directory — and remove the superseded `agents-resume` plugin from the marketplace.
 
-**Architecture:** A Node helper (`recover.js`, built-in modules only, read-only) does all deterministic work — listing recent transcripts and locating/extracting one by id. A thin `SKILL.md` interprets that output, warns about secrets, and offers a background relaunch using a detached-spawn + `/bg` pattern. Packaged as its own plugin at `plugins/recover-session/`.
+**Architecture:** A Node helper (`recover.js`, built-in modules only, read-only) does all deterministic work — listing recent transcripts and locating/extracting one by id. A thin `SKILL.md` interprets that output, warns about secrets, and gives the user a manual relaunch command (background relaunch can't be automated — `/background` needs a human-attached terminal). Packaged as its own plugin at `plugins/recover-session/`.
 
 **Tech Stack:** Node.js (built-in `fs`, `path`, `os` only). No npm, no test runner — verification uses throwaway Node `assert` scripts against crafted JSONL fixtures.
 
@@ -448,14 +448,17 @@ deletes transcripts.
    reconstruction: the original intent (first user turn), the last user request,
    the last assistant action, and what looked like the next step.
 
-4. **Offer to relaunch.** Show the manual command:
+4. **Offer to relaunch.** Give the user the command to resume in the original
+   directory, for them to run themselves:
    ```bash
    cd "<cwd>" && claude --resume <id>
    ```
-   Then offer to relaunch it in the background for them. If they accept, spawn it
-   detached in the decoded `cwd`: run `claude --resume <id>` with `cwd` set to the
-   session's cwd, `detached: true`, write `/bg\n` to its stdin, and `unref()` it.
-   Confirm what was launched.
+   Do **not** try to relaunch it in the background for them. Background relaunch
+   can't be automated from here: `/background` only detaches a session a human is
+   *interactively* attached to, so a spawned/detached process has no terminal to
+   hand off and just ends up an orphaned TUI on an invisible PTY. Instead, tell
+   the user that once the session is up they can type `/bg` (or `/background`)
+   themselves to push it to the background.
 
 Do not relaunch without explicit confirmation.
 ```
@@ -679,5 +682,5 @@ Expected: a PR URL. Copilot is auto-requested as reviewer via the repo ruleset.
 
 - **No version bumps by hand** after creation — `plugin.json` starts at `0.1.0`; thereafter release-please owns `version` and the CHANGELOG, driven by `feat(recover-session):` / `fix(recover-session):` commit subjects.
 - **Throwaway tests are not committed.** They live in `$CLAUDE_JOB_DIR/tmp`. Adding test files inside the plugin directory would pollute the marketplace structure (the repo has no test suite by design).
-- **recover.js stays read-only.** It never writes to `~/.claude/projects/`. The only process-spawning (relaunch) lives in `SKILL.md`, gated on user confirmation.
+- **recover.js stays read-only.** It never writes to `~/.claude/projects/`. The skill spawns no processes either — relaunch is a command handed to the user to run themselves (background relaunch can't be automated headlessly).
 - If the `path.resolve(__dirname, ...)` in `test-list.js` doesn't point at the repo, hardcode the absolute script path as `test-find.js` does.

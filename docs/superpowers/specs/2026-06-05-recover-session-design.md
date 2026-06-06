@@ -27,9 +27,11 @@ off the picker, reconstructs what was happening, and offers to relaunch them.
   `.claude-plugin/marketplace.json` (no longer discoverable/installable). The
   plugin **files stay in the repo** (and its release-please package config is
   left intact) so existing installs and history are undisturbed.
-- **End behavior:** summarize the recovered session, then *offer to relaunch* it
-  in the correct working directory (reusing `resume.js`'s detached-spawn + `/bg`
-  pattern).
+- **End behavior:** summarize the recovered session, then give the user the
+  command to relaunch it in the correct working directory. Background relaunch is
+  *not* automated — `/background` only detaches a session a human is
+  interactively attached to, so a detached spawn just orphans a TUI. The user
+  runs the resume command and can `/bg` it themselves.
 - **Trigger:** *description-based auto-trigger* (the native skill mechanism) plus
   `user-invocable: true`. A publisher cannot inject a global `CLAUDE.md` into a
   consumer's projects, so the skill `description` is the real trigger.
@@ -153,10 +155,10 @@ Flow:
 3. **Summarize.** From `turns`, present a concise reconstruction: original
    intent, the last user request, the last assistant action, and what was coming
    next.
-4. **Offer relaunch.** Show the manual command `cd <cwd> && claude --resume
-   <id>`, and offer to relaunch in the background using the same detached-spawn +
-   `/bg` pattern as `resume.js` (spawn `claude --resume <id>` with `cwd`,
-   `detached`, write `/bg\n` to stdin, `unref`).
+4. **Offer relaunch.** Give the user the command `cd <cwd> && claude --resume
+   <id>` to run themselves. Background relaunch can't be automated:
+   `/background` requires a human-attached terminal, so a detached spawn just
+   orphans a TUI. Note the user can type `/bg` once the session is up.
 
 `SKILL.md` stays lean — it interprets `recover.js` output and decides next
 steps; it does not re-implement finding/parsing.
