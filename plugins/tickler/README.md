@@ -64,11 +64,16 @@ Setup writes a config file and an empty watch list. After that, tickler starts i
 
 ```text
 /tickler list
+/tickler update https://github.com/org/repo/pull/123 merged
 /tickler remove https://github.com/org/repo/pull/123
 /tickler config
 /tickler stop
 /tickler setup
 ```
+
+`/tickler update <url> ...` edits a watched item in place — change its
+condition, label, or actions without losing its history or observed state
+(unlike remove + re-add, which resets them).
 
 `/tickler config` resolves and prints the full path to your `CLAUDE.md`
 config file and shows current settings.

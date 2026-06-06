@@ -1,4 +1,4 @@
-# Tickler — Add / Remove / List
+# Tickler — Add / Update / Remove / List
 
 All reads and writes go through `scripts/state.js`. Do not use Read/Write
 tools on tickler.json directly.
@@ -28,7 +28,8 @@ Parse the argument: `add <url-or-id> [condition]`
    ```bash
    node $SKILL_SCRIPTS_DIR/scripts/state.js list --data $CLAUDE_PLUGIN_DATA
    ```
-   If the URL already exists, tell the user and offer to update the condition.
+   If the URL already exists, tell the user and offer to update it in place
+   (see **Updating an item** below) rather than removing and re-adding.
 
 2. Fetch baseline state immediately to avoid a false-positive on the first
    monitor cycle. Use the appropriate fetch script directly (the item is not
@@ -103,6 +104,43 @@ Parse the argument: `add <url-or-id> [condition]`
 5. Confirm to user: "Watching [url] for [condition]." If actions were added,
    list them: "Actions: when [on] → [do]."
 
+## Updating an item
+
+Parse: `update <url-or-id>` plus whatever the user wants to change (condition,
+label, or actions). Use this to change a watched item in place — it preserves
+the item's `id`, `added`, `snoozed_until`, and observed `state`, so the next
+monitor cycle does not see a false change. Removing and re-adding would reset
+all of those, so prefer `update` for any edit to an existing item.
+
+1. Load current items to find the target and see its current actions:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/state.js list --data $CLAUDE_PLUGIN_DATA
+   ```
+   Match by URL (partial match ok; confirm if ambiguous).
+
+2. Build a **partial** patch JSON containing only the fields to change:
+   - Top-level fields (`condition`, `label`) overwrite shallowly.
+   - `actions` merge by the `on` key: an action whose `on` matches an existing
+     one **replaces** it; a new `on` is **appended**. Actions you don't mention
+     are kept. Because the merge only adds or replaces, it cannot delete an
+     action — to drop one, `remove <url>` then `add` the item fresh.
+   - Do **not** include `url` (the lookup key cannot be changed — remove and
+     re-add for that), `id`, `added`, `snoozed_until`, or `state` unless you
+     deliberately intend to overwrite them.
+
+3. Apply the patch atomically:
+   ```bash
+   node $SKILL_SCRIPTS_DIR/scripts/state.js update-item \
+     --data $CLAUDE_PLUGIN_DATA \
+     '<url>' \
+     '<partial-json>'
+   ```
+   The script exits 1 if the URL is not found, if the patch is not a JSON
+   object, if it tries to change `url`, or if it contains a forbidden key
+   (`__proto__`, `constructor`, `prototype`). It prints the updated item.
+
+4. Confirm to user what changed, e.g. "Updated [url]: condition → merged."
+
 ## Removing an item
 
 Parse: `remove <url-or-id>`
@@ -139,6 +177,10 @@ Parse: `remove <url-or-id>`
 ## Gotchas
 
 - `add-item` exits 1 if the URL is already in tickler.json — check first.
+- `update-item` exits 1 if the URL is not found — confirm URL with user. It
+  cannot change `url`; remove + re-add for that.
+- Prefer `update-item` over remove + re-add when editing an existing item — it
+  keeps `id`, `added`, `snoozed_until`, and `state` intact.
 - `remove-item` exits 1 if the URL is not found — confirm URL with user.
 - Do NOT generate UUIDs or timestamps manually — the script handles that.
 - Do NOT use Read/Write tools on tickler.json directly.
