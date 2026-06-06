@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.9](https://github.com/FrankLedo/claude-skills/compare/v0.4.8...v0.4.9) (2026-06-06)
+
+
+### Features
+
+* **tickler:** add update-item command to state.js ([#141](https://github.com/FrankLedo/claude-skills/issues/141)) ([c790138](https://github.com/FrankLedo/claude-skills/commit/c790138dbeb78e597a17e1200ec8122cefece971))
+
 ## [0.4.8](https://github.com/FrankLedo/claude-skills/compare/v0.4.7...v0.4.8) (2026-05-30)
 
 
