@@ -25,7 +25,18 @@ deletes transcripts.
 
 ## Flow
 
-1. **Locate the session.**
+1. **Warn before showing any transcript content.** Both the `list` output
+   (`intent`) and the later summary are derived from transcript text, so print
+   this prominently *before* running any command that displays session content:
+
+   > ⚠ Session transcripts can contain secrets or personal data. This summary is
+   > for your eyes — don't paste it into untrusted contexts.
+
+   (The helper already strips `tool_use`/`tool_result` blocks, which is where
+   credential output usually lives, but plain text turns can still contain
+   sensitive material.)
+
+2. **Locate the session.**
    - If the user gave a session id:
      ```bash
      node "$SKILL_SCRIPTS_DIR/scripts/recover.js" find <id>
@@ -38,17 +49,6 @@ deletes transcripts.
      ```
      Show the recent sessions (intent, cwd, time) and ask which one to recover,
      then run `find <id>` on their choice.
-
-2. **Warn before showing any transcript content.** The summary in the next step
-   is derived from transcript text, so print this prominently *before*
-   summarizing:
-
-   > ⚠ Session transcripts can contain secrets or personal data. This summary is
-   > for your eyes — don't paste it into untrusted contexts.
-
-   (The helper already strips `tool_use`/`tool_result` blocks, which is where
-   credential output usually lives, but plain text turns can still contain
-   sensitive material.)
 
 3. **Summarize.** From the `turns` in the `find` output, give a short
    reconstruction: the original intent (first user turn), the last user request,

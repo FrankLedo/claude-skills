@@ -116,7 +116,9 @@ Locate the transcript and extract context:
 
 ### Error handling (shared)
 
-- Missing `~/.claude/projects` directory → clean message, exit 0.
+- Missing `~/.claude/projects` directory → clean message. `list` exits 0
+  (nothing to recover); `find` exits non-zero so `SKILL.md` can detect the
+  failure and fall back.
 - Per-line `JSON.parse` failure → warn to **stderr** (`⚠ <file>:<line>: <msg>`)
   and continue. One corrupt line never aborts the run, and errors are surfaced,
   not silently discarded.
@@ -140,16 +142,17 @@ argument-hint: "[session-id]"
 
 Flow:
 
-1. **Locate.**
+1. **Warn (prominent).** Before showing any transcript content — including the
+   `list` `intent` and the later summary — display a secret/PII warning:
+   transcripts may contain secrets or personal data; don't paste output outside a
+   trusted context.
+2. **Locate.**
    - Id provided → `recover.js find <id>`. If not found, fall back to
      `recover.js list` and ask which session.
    - No id → `recover.js list`, present recent sessions, ask which to recover.
-2. **Summarize.** From `turns`, present a concise reconstruction: original
+3. **Summarize.** From `turns`, present a concise reconstruction: original
    intent, the last user request, the last assistant action, and what was coming
    next.
-3. **Warn (prominent).** Before showing any transcript content, display a
-   secret/PII warning: transcripts may contain secrets or personal data; don't
-   paste output outside a trusted context.
 4. **Offer relaunch.** Show the manual command `cd <cwd> && claude --resume
    <id>`, and offer to relaunch in the background using the same detached-spawn +
    `/bg` pattern as `resume.js` (spawn `claude --resume <id>` with `cwd`,
