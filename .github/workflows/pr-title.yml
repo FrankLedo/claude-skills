@@ -18,7 +18,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Allowed types (subset — omit types that don't make sense for a plugin repo)
+          # Allowed types — the standard Conventional Commits set
           types: |
             feat
             fix
@@ -26,6 +26,9 @@ jobs:
             chore
             refactor
             perf
+            ci
+            test
+            build
           # Require a scope for feat and fix (e.g. feat(slack-monitor): ...)
           # Set to false if you prefer scopeless titles
           requireScope: false
