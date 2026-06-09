@@ -2,5 +2,5 @@
   "plugins/slack-monitor": "0.4.0",
   "plugins/tickler": "0.5.0",
   "plugins/recover-session": "0.1.4",
-  "plugins/agents-view-tools": "1.1.0"
+  "plugins/agents-view-tools": "1.1.1"
 }
