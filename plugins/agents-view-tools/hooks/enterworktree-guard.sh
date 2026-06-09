@@ -41,7 +41,8 @@ common=$(git -C "$cwd" rev-parse --path-format=absolute --git-common-dir 2>/dev/
 [ "$gitdir" = "$common" ] && exit 0
 
 # Already in a linked worktree -> a create would nest. Deny with recovery steps.
-wt=$(basename "$cwd")
+# Name the worktree by its toplevel, not cwd (which may be a subdirectory of it).
+wt=$(basename "$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$cwd")")
 branch=$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)
 reason="agents-view worktree guard: you're already inside worktree '$wt'${branch:+ (branch $branch)}, so this checkout is already isolated -- creating another worktree would nest one inside it. Skip EnterWorktree and edit here. If this task is UNRELATED to '$branch', call ExitWorktree to return to the repo root, then EnterWorktree to start fresh off the default base (main) -- otherwise your work inherits '$branch'. To switch to a different existing worktree, pass its path to EnterWorktree. To allow nesting here, set AGENTS_VIEW_INPLACE=1."
 jq -cn --arg r "$reason" \

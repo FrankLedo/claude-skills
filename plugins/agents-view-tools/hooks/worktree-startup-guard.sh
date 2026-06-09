@@ -34,7 +34,8 @@ gitdir=$(git -C "$cwd" rev-parse --path-format=absolute --git-dir 2>/dev/null) |
 common=$(git -C "$cwd" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || exit 0
 [ "$gitdir" != "$common" ] || exit 0
 
-wt=$(basename "$cwd")
+# Name the worktree by its toplevel, not cwd (which may be a subdirectory of it).
+wt=$(basename "$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$cwd")")
 branch=$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)
 msg="Heads-up: this session started inside the existing worktree '$wt'${branch:+ (branch $branch)} -- it was not created for this session. If your task is RELATED to '$branch', continue here; you're already isolated, so do NOT call EnterWorktree. If it's UNRELATED, this leftover worktree is the wrong base: call ExitWorktree to return to the repo root, then EnterWorktree to start fresh off the default base (main) before editing -- otherwise your work inherits '$branch'."
 jq -cn --arg c "$msg" \
