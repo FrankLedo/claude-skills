@@ -12,23 +12,26 @@ FAIL=0
 ok()   { PASS=$((PASS+1)); printf '  ok   - %s\n' "$1"; }
 nope() { FAIL=$((FAIL+1)); printf '  FAIL - %s\n     %s\n' "$1" "$2"; }
 
-# run_prompt_hook <cwd> <prompt> -> echoes the hook's stdout; uses a fresh job dir.
-# Sets CLAUDE_JOB_DIR so the hook treats this as an agents-view session.
-run_prompt_hook() {
-  local cwd="$1" prompt="$2"
-  JOBDIR=$(mktemp -d)
-  printf '{"cwd":%s,"prompt":%s}' \
-    "$(printf '%s' "$cwd" | jq -R .)" "$(printf '%s' "$prompt" | jq -R .)" \
-    | CLAUDE_JOB_DIR="$JOBDIR" bash "$HOOKS/name-session-from-prompt.sh"
-}
+# All transient artifacts (per-call job dirs, transcripts) live under one root so
+# a single trap cleans them up, leaving no temp dirs behind across runs/CI.
+WORK=$(mktemp -d)
 
 # A real git repo cwd for the positive control. It must live OUTSIDE any temp
 # dir (mktemp -d lands under $TMPDIR, which the guard correctly skips), so create
 # it beside this test file under the repo tree.
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.tmp-test-repo-$$"
 mkdir -p "$REPO" && ( cd "$REPO" && git init -q )
-cleanup() { rm -rf "$REPO"; }
-trap cleanup EXIT
+trap 'rm -rf "$WORK" "$REPO"' EXIT
+
+# run_prompt_hook <cwd> <prompt> -> echoes the hook's stdout; uses a fresh job dir
+# under $WORK. Sets CLAUDE_JOB_DIR so the hook treats this as an agents-view session.
+run_prompt_hook() {
+  local cwd="$1" prompt="$2" jobdir
+  jobdir=$(mktemp -d "$WORK/job.XXXXXX")
+  printf '{"cwd":%s,"prompt":%s}' \
+    "$(printf '%s' "$cwd" | jq -R .)" "$(printf '%s' "$prompt" | jq -R .)" \
+    | CLAUDE_JOB_DIR="$jobdir" bash "$HOOKS/name-session-from-prompt.sh"
+}
 
 echo "name-session-from-prompt.sh"
 
@@ -45,7 +48,7 @@ else nope "skips /tmp compression session (no title)" "emitted: $out"; fi
 
 # The temp-dir guard must fire BEFORE any marker write, so the inherited parent
 # marker is never clobbered with the summarizer title.
-JOBDIR=$(mktemp -d)
+JOBDIR=$(mktemp -d "$WORK/job.XXXXXX")
 printf '{"cwd":"/private/tmp","prompt":"You are summarizing a Claude Code session"}' \
   | CLAUDE_JOB_DIR="$JOBDIR" bash "$HOOKS/name-session-from-prompt.sh" >/dev/null
 if [ ! -e "$JOBDIR/.session-title" ]; then ok "does not write a marker for temp-dir session"
@@ -61,10 +64,10 @@ echo "name-session.sh (SessionStart)"
 # SessionStart on RESUME derives the title from the transcript's first prompt.
 # For a temp-dir summarizer session that would be "tmp · You are summarizing …";
 # the guard must suppress it just like the UserPromptSubmit hook.
-TX=$(mktemp)
+TX=$(mktemp "$WORK/transcript.XXXXXX")
 printf '%s\n' '{"type":"user","message":{"content":"You are summarizing a Claude Code session for a daily memory log."}}' > "$TX"
 out=$(printf '{"source":"resume","cwd":"/private/tmp","transcript_path":%s}' "$(printf '%s' "$TX" | jq -R .)" \
-  | CLAUDE_JOB_DIR="$(mktemp -d)" bash "$HOOKS/name-session.sh")
+  | CLAUDE_JOB_DIR="$(mktemp -d "$WORK/job.XXXXXX")" bash "$HOOKS/name-session.sh")
 if [ -z "$out" ]; then ok "SessionStart skips temp-dir resume (no title)"
 else nope "SessionStart skips temp-dir resume (no title)" "emitted: $out"; fi
 

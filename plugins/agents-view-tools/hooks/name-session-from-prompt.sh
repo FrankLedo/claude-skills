@@ -40,6 +40,9 @@ DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 input=$(cat)
 jqr() { printf '%s' "$input" | jq -r "$1" 2>/dev/null; }
 cwd=$(jqr '.cwd // empty')
+# Fall back to the process cwd if the payload omits it (matches the sibling
+# worktree guards), so an empty .cwd can't let a temp-dir child slip the guard.
+[ -z "$cwd" ] && cwd=$(pwd)
 
 # Skip sandboxed/headless temp-dir sub-sessions (e.g. the `remember` plugin's
 # `claude -p` summarizers run with cwd=$TMPDIR and inherit our CLAUDE_JOB_DIR).
