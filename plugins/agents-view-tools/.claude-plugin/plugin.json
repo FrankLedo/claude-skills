@@ -1,6 +1,6 @@
 {
   "name": "agents-view-tools",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Convenience for sessions launched from agents view: name them from a 'name - task' first prompt (and keep the name across resume), and steer git edits into a worktree instead of a shared main checkout.",
   "author": {
     "name": "Frank Ledo",
