@@ -23,6 +23,7 @@ claude plugin install slack-monitor
 | [slack-monitor](plugins/slack-monitor/) | Scan Slack for unanswered DMs, @mentions, and thread replies. Drafts context-aware replies and asks permission before sending. |
 | [tickler](plugins/tickler/) | Watch GitHub PRs, issues, and Jira tickets. Get notified when something changes or meets a condition. |
 | [recover-session](plugins/recover-session/) | Find sessions missing from the `/resume` picker, summarize them, and relaunch in the original directory. |
+| [agents-view-tools](plugins/agents-view-tools/) | Name agents-view sessions from a `name - task` first prompt (kept across resume), and steer git edits into a worktree instead of a shared main checkout. |
 
 ## Usage
 
