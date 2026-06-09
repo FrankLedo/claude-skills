@@ -38,10 +38,16 @@ marker=$(marker_path)
 [ -n "$marker" ] || exit 0
 # Already named? Re-assert the stored title on every prompt so each one re-wins
 # the race against Claude Code's async auto-titler (issue #153). Cheap: one read.
-if [ -s "$marker" ]; then
-  jq -cn --arg t "$(cat "$marker")" \
-    '{hookSpecificOutput:{hookEventName:"UserPromptSubmit", sessionTitle:$t}}'
-  exit 0
+# Require a readable, non-empty regular file (not a dir/unreadable) and confirm
+# the content is non-empty before emitting, so a bad marker never sets a blank
+# title -- instead it falls through to re-derivation from this prompt.
+if [ -f "$marker" ] && [ -r "$marker" ]; then
+  stored=$(cat "$marker" 2>/dev/null)
+  if [ -n "$stored" ]; then
+    jq -cn --arg t "$stored" \
+      '{hookSpecificOutput:{hookEventName:"UserPromptSubmit", sessionTitle:$t}}'
+    exit 0
+  fi
 fi
 
 input=$(cat)
@@ -55,8 +61,9 @@ name=$(prompt_name "$prompt")
 [ -z "$name" ] && exit 0
 
 title="$(repo_label "$cwd") : $name"
-# Persist the title (state + storage) so resume can reuse it verbatim.
-printf '%s' "$title" > "$marker" 2>/dev/null || true
+# Persist the title (state + storage) so resume can reuse it verbatim. Group the
+# redirection so a write failure (e.g. marker path unwritable) stays silent.
+{ printf '%s' "$title" > "$marker"; } 2>/dev/null || true
 jq -cn --arg t "$title" \
   '{hookSpecificOutput:{hookEventName:"UserPromptSubmit", sessionTitle:$t}}'
 exit 0

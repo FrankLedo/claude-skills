@@ -33,7 +33,9 @@ The session title becomes:
 - The name must appear within the first ~40 characters (a stray ` - ` deeper in a
   prompt is ignored).
 - It's set by the **first prompt that uses the convention** — forget it on line 1
-  and you can still name the session on a later prompt.
+  and you can still name the session on a later prompt. The first convention name
+  **wins**: once stored, a different `name - task` on a later prompt won't replace
+  it (the stored title is what gets re-asserted).
 - The chosen title is stored in the session's job dir and **re-asserted on every
   later prompt (and on resume)**, so Claude Code's async auto-titler doesn't
   clobber it mid-session. Trade-off: a manual `/rename` in an agents-view session
