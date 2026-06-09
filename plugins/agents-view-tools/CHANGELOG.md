@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/FrankLedo/claude-skills/compare/agents-view-tools-v1.1.0...agents-view-tools-v1.1.1) (2026-06-09)
+
+
+### Bug Fixes
+
+* **agents-view-tools:** skip naming temp-dir sub-sessions ([#158](https://github.com/FrankLedo/claude-skills/issues/158)) ([2845655](https://github.com/FrankLedo/claude-skills/commit/28456555f2e9321ef320d7e5e3ca216b3f8ee6dc))
+
 ## [1.1.0](https://github.com/FrankLedo/claude-skills/compare/agents-view-tools-v1.0.0...agents-view-tools-v1.1.0) (2026-06-09)
 
 
