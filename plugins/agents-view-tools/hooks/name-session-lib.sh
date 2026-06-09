@@ -20,6 +20,28 @@ repo_label() {
   printf '%s' "$repo"
 }
 
+# in_tempdir <cwd> -> success (0) if cwd is inside a system temp directory.
+# Sandboxed, headless `claude -p` sub-sessions run with cwd=$TMPDIR -- e.g. the
+# `remember` plugin's memory summarizer/compressor (cwd=tempfile.gettempdir()).
+# Those children inherit this session's CLAUDE_JOB_DIR, so the naming hooks would
+# otherwise title them "tmp : You are summarizing a Claude Code", create phantom
+# resumable sessions in the picker, and (via the shared marker) clobber the real
+# parent session's title. They are never user-resumable agents-view sessions, so
+# the hooks bail when cwd is a temp dir. Covers $TMPDIR plus the usual macOS
+# (/private/tmp, /var/folders) and Linux (/tmp) roots, with/without /private.
+in_tempdir() {
+  local cwd="$1" t
+  [ -n "$cwd" ] || return 1
+  case "$cwd" in
+    /tmp|/tmp/*|/private/tmp|/private/tmp/*|/var/folders/*|/private/var/folders/*) return 0 ;;
+  esac
+  if [ -n "${TMPDIR:-}" ]; then
+    t="${TMPDIR%/}"
+    case "$cwd" in "$t"|"$t"/*) return 0 ;; esac
+  fi
+  return 1
+}
+
 # marker_path -> path to this session's title marker file, or nothing.
 # The marker doubles as state (its existence = "already named") and storage (its
 # contents = the chosen title), so resume can reuse the name verbatim instead of

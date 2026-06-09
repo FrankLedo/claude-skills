@@ -36,6 +36,13 @@ The session title becomes:
   prompt (`<folder> : figure out why the homepage`), so a session you didn't
   prefix is still findable by what it opened with rather than left to the
   auto-titler. Slash-commands and system/wrapper prompts don't produce a title.
+- **Temp-dir sessions are left alone.** Sandboxed, headless `claude -p`
+  sub-sessions run with their cwd in the system temp dir (e.g. the `remember`
+  plugin's memory summarizer/compressor) and inherit this session's
+  `CLAUDE_JOB_DIR`. They are never resumable agents-view sessions, so naming is
+  skipped for any cwd under `$TMPDIR` / `/tmp` / `/private/tmp` / `/var/folders`
+  — otherwise they'd pile up as phantom `tmp : You are summarizing a Claude Code`
+  entries (and could clobber the real session's title via the shared marker).
 - The first prompt wins: once a title is stored, later prompts don't replace it
   (the stored title is what gets re-asserted) — so the name reflects what the
   session opened with.
