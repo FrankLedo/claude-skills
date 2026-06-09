@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# UserPromptSubmit hook: on the FIRST prompt of an agents-view session, if that
-# prompt starts with "name - task", set the session title to "{folder} : {name}"
-# so the many stream-of-consciousness sessions in agent view stay findable.
+# UserPromptSubmit hook: name an agents-view session from its first prompt so the
+# many stream-of-consciousness sessions in agent view stay findable. If the prompt
+# uses the "name - task" convention, the title is "{folder} : {name}"; otherwise
+# it falls back to "{folder} : {first few words of the prompt}".
 #
 # Why UserPromptSubmit (not SessionStart): verified against the CC 2.1.168
 # binary, the UserPromptSubmit hook output schema includes `sessionTitle`
@@ -12,9 +13,10 @@
 # Scope:
 #   - Agents view only: those sessions get a CLAUDE_JOB_DIR; interactive
 #     terminal sessions don't, and are left alone (you can /rename those by hand).
-#   - Set on the first prompt that uses the convention (so a forgotten prefix on
-#     prompt 1 doesn't permanently lose the chance); the chosen title is written
-#     to the marker file (marker_path).
+#   - Set on the first prompt: the "name - task" convention if present, else the
+#     first few words of the prompt. The chosen title is written to the marker
+#     file (marker_path). (Slash-commands / system wrappers don't yield a title,
+#     so a forgotten prefix on a real first prompt still names from its words.)
 #   - Re-asserted on EVERY later prompt. Claude Code's auto-titler fires
 #     asynchronously and clobbers the hook-set title mid-session (issue #153), so
 #     a one-shot setter loses the race. Re-emitting the stored title on each
@@ -58,6 +60,10 @@ cwd=$(jqr '.cwd // empty')
 [ -z "$prompt" ] && exit 0
 
 name=$(prompt_name "$prompt")
+# No "name - task" convention? Fall back to the first few words of the prompt --
+# a session is more findable titled by what it opened with than left to the
+# auto-titler / branch name.
+[ -z "$name" ] && name=$(prompt_brief "$prompt")
 [ -z "$name" ] && exit 0
 
 title="$(repo_label "$cwd") : $name"
