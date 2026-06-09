@@ -26,8 +26,9 @@
 #   - The marker STORES the title, so the SessionStart hook can reuse it verbatim
 #     on resume too -- one source of truth.
 #
-# Deterministic, zero-token. Emits nothing (title untouched) unless the session
-# is already named, or a prompt uses the "name - task" convention.
+# Deterministic, zero-token. Emits nothing (title untouched) for slash-commands
+# and system/wrapper prompts; otherwise names from the convention or, failing
+# that, the prompt's first few words (and re-asserts a stored name on later prompts).
 set -u
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=/dev/null
@@ -58,6 +59,12 @@ jqr() { printf '%s' "$input" | jq -r "$1" 2>/dev/null; }
 prompt=$(jqr '.prompt // empty')
 cwd=$(jqr '.cwd // empty')
 [ -z "$prompt" ] && exit 0
+
+# Never name from a slash-command or system/wrapper prompt -- applied here, before
+# the convention check, so even "/cmd - x" or "<tag> - x" yields no title.
+case "$prompt" in
+  /*|'<'*) exit 0 ;;
+esac
 
 name=$(prompt_name "$prompt")
 # No "name - task" convention? Fall back to the first few words of the prompt --
