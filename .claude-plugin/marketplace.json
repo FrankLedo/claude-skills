@@ -19,6 +19,11 @@
       "name": "recover-session",
       "source": "./plugins/recover-session",
       "description": "Find Claude Code sessions missing from the /resume picker via transcripts in ~/.claude/projects/, summarize them, and offer to relaunch."
+    },
+    {
+      "name": "agents-view-tools",
+      "source": "./plugins/agents-view-tools",
+      "description": "Convenience for sessions launched from agents view: name them from a 'name - task' first prompt (kept across resume), and steer git edits into a worktree instead of a shared main checkout."
     }
   ]
 }
