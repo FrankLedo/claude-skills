@@ -57,3 +57,21 @@ prompt_name() {
   [ "${#name}" -gt "$NAME_MAXLEN" ] && return 0
   printf '%s' "$name"
 }
+
+# prompt_brief <prompt> -> the first few words of the prompt, or nothing.
+# Fallback when the "name - task" convention isn't used: a session is still more
+# findable titled by what it opened with than by a whimsical branch name. Takes
+# the first $NAME_WORDS words on one line. Skips slash-commands and wrapper/
+# system tags (a leading "/" or "<"), which aren't meaningful titles.
+NAME_WORDS=${NAME_WORDS:-6}
+prompt_brief() {
+  local prompt="$1" out
+  out=$(printf '%s' "$prompt" | tr '\n\t' '  ' \
+    | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s/[[:space:]]+/ /g')
+  [ -z "$out" ] && return 0
+  case "$out" in
+    /*|'<'*) return 0 ;;   # slash-command or system/wrapper tag -> not a title
+  esac
+  printf '%s' "$out" \
+    | awk -v n="$NAME_WORDS" '{m=NF<n?NF:n; for(i=1;i<=m;i++) printf "%s%s",$i,(i<m?" ":"")}'
+}

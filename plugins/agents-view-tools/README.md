@@ -12,7 +12,7 @@ plugin does a few small, deterministic things — no model calls, no tokens:
 Both only act on agents-view sessions (detected via the `CLAUDE_JOB_DIR` the
 harness sets for background jobs). Interactive terminal sessions are left alone.
 
-## 1. Session naming — `name - task`
+## 1. Session naming — `name - task` (or first words)
 
 Start your **first prompt** with a short name, a spaced dash, then the task:
 
@@ -32,18 +32,21 @@ The session title becomes:
   `auto-deploy` never trigger it.
 - The name must appear within the first ~40 characters (a stray ` - ` deeper in a
   prompt is ignored).
-- It's set by the **first prompt that uses the convention** — forget it on line 1
-  and you can still name the session on a later prompt. The first convention name
-  **wins**: once stored, a different `name - task` on a later prompt won't replace
-  it (the stored title is what gets re-asserted).
+- **No ` - `? It still names the session** — from the **first few words** of the
+  prompt (`<folder> : figure out why the homepage`), so a session you didn't
+  prefix is still findable by what it opened with rather than left to the
+  auto-titler. Slash-commands and system/wrapper prompts don't produce a title.
+- The first prompt wins: once a title is stored, later prompts don't replace it
+  (the stored title is what gets re-asserted) — so the name reflects what the
+  session opened with.
 - The chosen title is stored in the session's job dir and **re-asserted on every
   later prompt (and on resume)**, so Claude Code's async auto-titler doesn't
   clobber it mid-session. Trade-off: a manual `/rename` in an agents-view session
   is reverted on the next prompt — the convention name wins here.
 
-Sessions that never use the convention fall back to a git-branch-derived name at
-startup (handy for issue-per-branch workflows) and are otherwise left to the
-default titler.
+At fresh startup — before any prompt exists — there's nothing to name from yet, so
+the title falls back to a git-branch-derived name (handy for issue-per-branch
+workflows). The first prompt then takes over per the rules above.
 
 ## 2. Worktree guard
 
