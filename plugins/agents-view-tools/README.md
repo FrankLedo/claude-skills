@@ -32,10 +32,12 @@ The session title becomes:
   `auto-deploy` never trigger it.
 - The name must appear within the first ~40 characters (a stray ` - ` deeper in a
   prompt is ignored).
-- It fires on the **first prompt that uses the convention** — forget it on line 1
-  and you can still name the session on a later prompt; once named, it's locked.
-- The chosen title is stored in the session's job dir and **re-asserted on
-  resume**, so Claude Code's auto-titler doesn't clobber it.
+- It's set by the **first prompt that uses the convention** — forget it on line 1
+  and you can still name the session on a later prompt.
+- The chosen title is stored in the session's job dir and **re-asserted on every
+  later prompt (and on resume)**, so Claude Code's async auto-titler doesn't
+  clobber it mid-session. Trade-off: a manual `/rename` in an agents-view session
+  is reverted on the next prompt — the convention name wins here.
 
 Sessions that never use the convention fall back to a git-branch-derived name at
 startup (handy for issue-per-branch workflows) and are otherwise left to the
