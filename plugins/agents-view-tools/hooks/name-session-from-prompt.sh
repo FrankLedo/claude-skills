@@ -37,6 +37,19 @@ DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # Agents-view sessions only.
 [ -n "${CLAUDE_JOB_DIR:-}" ] || exit 0
 
+input=$(cat)
+jqr() { printf '%s' "$input" | jq -r "$1" 2>/dev/null; }
+cwd=$(jqr '.cwd // empty')
+# Fall back to the process cwd if the payload omits it (matches the sibling
+# worktree guards), so an empty .cwd can't let a temp-dir child slip the guard.
+[ -z "$cwd" ] && cwd=$(pwd)
+
+# Skip sandboxed/headless temp-dir sub-sessions (e.g. the `remember` plugin's
+# `claude -p` summarizers run with cwd=$TMPDIR and inherit our CLAUDE_JOB_DIR).
+# Done before the marker read/write so we never title a phantom temp-dir session
+# nor clobber the parent's shared title marker. See in_tempdir in the lib.
+in_tempdir "$cwd" && exit 0
+
 marker=$(marker_path)
 [ -n "$marker" ] || exit 0
 # Already named? Re-assert the stored title on every prompt so each one re-wins
@@ -53,11 +66,7 @@ if [ -f "$marker" ] && [ -r "$marker" ]; then
   fi
 fi
 
-input=$(cat)
-jqr() { printf '%s' "$input" | jq -r "$1" 2>/dev/null; }
-
 prompt=$(jqr '.prompt // empty')
-cwd=$(jqr '.cwd // empty')
 [ -z "$prompt" ] && exit 0
 
 # Never name from a slash-command or system/wrapper prompt -- applied here, before

@@ -22,10 +22,19 @@ input=$(cat)
 
 jqr() { printf '%s' "$input" | jq -r "$1" 2>/dev/null; }
 
-# Shared with name-session-from-prompt.sh: repo_label + marker_path.
+# Shared with name-session-from-prompt.sh: repo_label + marker_path + in_tempdir.
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=/dev/null
 . "$DIR/name-session-lib.sh"
+
+cwd=$(jqr '.cwd // empty')
+[ -z "$cwd" ] && cwd=$(pwd)
+
+# Skip sandboxed/headless temp-dir sub-sessions (e.g. the `remember` plugin's
+# `claude -p` summarizers run with cwd=$TMPDIR and inherit our CLAUDE_JOB_DIR).
+# Done before the marker reuse so a resumed temp-dir session is never titled and
+# the parent's shared marker is never read into a phantom. See in_tempdir in lib.
+in_tempdir "$cwd" && exit 0
 
 # Reuse a title set earlier via the "name - task" convention, verbatim.
 mp=$(marker_path)
@@ -37,8 +46,6 @@ fi
 
 source=$(jqr '.source // empty')
 transcript=$(jqr '.transcript_path // empty')
-cwd=$(jqr '.cwd // empty')
-[ -z "$cwd" ] && cwd=$(pwd)
 
 # Repo name: resolve to the MAIN working tree even inside a worktree (a worktree's
 # --show-toplevel is the worktree dir, e.g. "issue-135"; --git-common-dir points
